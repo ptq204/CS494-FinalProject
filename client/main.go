@@ -1,13 +1,13 @@
 package main
 
 import (
-	configs "final-project/configs"
+	"final-project/client/cmd"
+	"final-project/client/manager"
+	"final-project/configs"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"log"
+
 	"github.com/spf13/viper"
-	"io/ioutil"
-	"net"
-	"strconv"
 )
 
 func main() {
@@ -18,20 +18,9 @@ func main() {
 	if err := viper.Unmarshal(config); err != nil {
 		log.Fatal("load config: ", err)
 	}
-	var addr string
-	addr = config.Host + ":" + strconv.Itoa(config.Port)
-	fmt.Printf("Connect to server on %s\n", addr)
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
+	err = manager.Connect(config)
 	checkError(err)
-
-	conn, err := net.DialTCP("tcp", nil, tcpAddr)
-	checkError(err)
-
-	_, err = conn.Write([]byte("QUYEN HELLO"))
-	checkError(err)
-
-	res, err := ioutil.ReadAll(conn)
-	fmt.Println(string(res))
+	cmd.Execute()
 }
 
 func checkError(err error) {
