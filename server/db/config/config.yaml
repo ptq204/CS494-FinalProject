@@ -1,0 +1,5 @@
+Hostname : "localhost"
+Port : 3306
+DBName : "new_socket"
+Username : "root"
+Password : "P@ssw0rd"
