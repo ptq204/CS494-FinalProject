@@ -6,6 +6,8 @@ import (
 	"net"
 	"strconv"
 
+	database "final-project/server/db/client"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -27,6 +29,7 @@ func main() {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
+	database.GetConnectionDB()
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
