@@ -7,7 +7,8 @@ import (
 	"strconv"
 
 	database "final-project/server/db/client"
-
+	"final-project/server/db/entity"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -29,7 +30,8 @@ func main() {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	database.GetConnectionDB()
+	db := database.GetConnectionDB()
+	db.AutoMigrate(&entity.UserChannel{}, &entity.Message{}, &entity.File{}, &entity.Channel{}, &entity.User{})
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
