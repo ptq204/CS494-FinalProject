@@ -31,7 +31,7 @@ func Connect(config *configs.SocketConfig) error {
 	addr = config.Host + ":" + strconv.Itoa(config.Port)
 	fmt.Printf("Connect to server on %s\n", addr)
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
-
+	fmt.Println(tcpAddr)
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 
 	clientService = ClientSocket{
@@ -47,7 +47,9 @@ func GetClientService() ClientSocket {
 
 func (c *ClientSocket) SendDataLogin(username string, password string) error {
 	buffAction := new(bytes.Buffer)
-	err := binary.Write(buffAction, binary.BigEndian, constant.Login)
+	action := make([]byte, 4)
+	binary.BigEndian.PutUint32(action, int32(constant.Login))
+	err := binary.Write(buffAction, binary.BigEndian, action)
 
 	checkError(err)
 

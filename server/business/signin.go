@@ -34,6 +34,13 @@ func Signin(username string, password string) message.ReturnMessage{
 			ReturnMessage: message.GetMessageDecription(message.WrongPassword),
 		}
 	}
+	err = db.Model(&user).Update("is_active", false).Error
+	if err != nil {
+		return message.ReturnMessage{
+			ReturnCode: message.Unknown,
+			ReturnMessage: message.GetMessageDecription(message.Unknown),
+		}
+	}
 	return message.ReturnMessage{
 		ReturnCode: message.Success,
 		ReturnMessage: message.GetMessageDecription(message.Success),

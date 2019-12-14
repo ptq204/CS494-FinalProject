@@ -47,26 +47,25 @@ func handleClient(conn net.Conn) {
 	defer conn.Close()
 
 	b := make([]byte, 100)
-	_, err := conn.Read(b[0:])
+	bytesRead, err := conn.Read(b[0:])
 	resBuf := append(b[0:], 0)
-
-	if err != nil {
+	if err!= nil && err != io.EOF {
 		checkError(err)
 	}
 	for {
-		if err == io.EOF {
-			break
-		}
 		_, err = conn.Read(b[:])
 		resBuf = append(resBuf, b[0:]...)
 		if err != nil && err != io.EOF {
 			checkError(err)
 		}
+		if err == io.EOF {
+			break
+		}
 	}
 
 	action := binary.BigEndian.Uint32(resBuf[:4])
-	tmpPayload := bytes.NewBuffer(resBuf[:4])
-
+	tmpPayload := bytes.NewBuffer(resBuf[4:])
+	
 	d := gob.NewDecoder(tmpPayload)
 
 	switch action {
