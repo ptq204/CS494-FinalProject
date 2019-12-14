@@ -38,7 +38,6 @@ func GetConnectionDB() *gorm.DB {
 }
 
 func checkError(err error) {
-	fmt.Println(viper.ConfigFileUsed())
 	if err != nil {
 		fmt.Println(err.Error())
 		panic(err)
