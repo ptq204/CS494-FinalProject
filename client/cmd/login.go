@@ -16,10 +16,10 @@ var loginCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Println("CHECK LOGINNNN")
-		fmt.Println(">>Password: ")
+		fmt.Print(">>Password: ")
 		pass, _ := reader.ReadString('\n')
 		clientService := manager.GetClientService()
-		clientService.SendData(args[0] + "\n" + pass)
+		clientService.SendDataLogin(args[0], pass)
 	},
 }
 

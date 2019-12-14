@@ -1,15 +1,19 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
+	"encoding/gob"
 	configs "final-project/configs"
-	"fmt"
-	"net"
-	"strconv"
-
+	payload "final-project/server/action_payload"
+	"final-project/server/constant"
 	database "final-project/server/db/client"
-
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"io"
+	"net"
+	"strconv"
 )
 
 func main() {
@@ -41,13 +45,52 @@ func main() {
 
 func handleClient(conn net.Conn) {
 	defer conn.Close()
-	fmt.Println(conn)
+
 	b := make([]byte, 100)
 	_, err := conn.Read(b[0:])
-	fmt.Println("CHeCKKKK")
-	checkError(err)
-	fmt.Println(string(b[0:]))
-	conn.Write([]byte("ACKKKK"))
+	resBuf := append(b[0:], 0)
+
+	if err != nil {
+		checkError(err)
+	}
+	for {
+		if err == io.EOF {
+			break
+		}
+		_, err = conn.Read(b[:])
+		resBuf = append(resBuf, b[0:]...)
+		if err != nil && err != io.EOF {
+			checkError(err)
+		}
+	}
+
+	action := binary.BigEndian.Uint32(resBuf[:4])
+	tmpPayload := bytes.NewBuffer(resBuf[:4])
+
+	d := gob.NewDecoder(tmpPayload)
+
+	switch action {
+	case constant.Login:
+		fmt.Println("LOGINNN")
+		var p payload.LoginPayload
+		err := d.Decode(&p)
+		if err != nil {
+			checkError(err)
+		}
+		fmt.Printf("User %s login with password: %s\n", p.Username, p.Password)
+		conn.Write([]byte("ACKKKK"))
+	case constant.Chat:
+		fmt.Println("CHATTTTT")
+		var p payload.ChatPayload
+		err := d.Decode(&p)
+		if err != nil {
+			checkError(err)
+		}
+		fmt.Printf("%s send msg to %s with content: %s\n", p.From, p.To, p.Message)
+		conn.Write([]byte("ACKKKK"))
+	default:
+		fmt.Println(d)
+	}
 }
 
 func checkError(err error) {

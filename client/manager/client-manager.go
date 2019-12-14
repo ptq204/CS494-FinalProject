@@ -1,7 +1,12 @@
 package manager
 
 import (
+	"bytes"
+	"encoding/binary"
+	"encoding/gob"
 	"final-project/configs"
+	payload "final-project/server/action_payload"
+	"final-project/server/constant"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -40,8 +45,45 @@ func GetClientService() ClientSocket {
 	return clientService
 }
 
-func (c *ClientSocket) SendData(data string) error {
-	_, err := c.conn.Write([]byte(data))
+func (c *ClientSocket) SendDataLogin(username string, password string) error {
+	buffAction := new(bytes.Buffer)
+	err := binary.Write(buffAction, binary.BigEndian, constant.Login)
+
+	checkError(err)
+
+	pl := payload.LoginPayload{Username: username, Password: password}
+
+	buffPayload := new(bytes.Buffer)
+
+	goobj := gob.NewEncoder(buffPayload)
+
+	goobj.Encode(pl)
+
+	dataSend := make([]byte, len(buffPayload.Bytes())+4)
+	copy(dataSend[:4], buffAction.Bytes())
+	copy(dataSend[4:], []byte(buffPayload.Bytes()))
+	_, err = c.conn.Write([]byte(dataSend))
+
+	return err
+}
+
+func (c *ClientSocket) SendDataChat(from string, to string, message string) error {
+	buffAction := new(bytes.Buffer)
+	err := binary.Write(buffAction, binary.BigEndian, constant.Login)
+
+	pl := payload.ChatPayload{From: from, To: to, Message: message}
+
+	buffPayload := new(bytes.Buffer)
+
+	goobj := gob.NewEncoder(buffPayload)
+
+	goobj.Encode(pl)
+
+	dataSend := make([]byte, len(buffPayload.Bytes())+4)
+	copy(dataSend[:4], buffAction.Bytes())
+	copy(dataSend[4:], []byte(buffPayload.Bytes()))
+	_, err = c.conn.Write([]byte(dataSend))
+
 	return err
 }
 
@@ -49,4 +91,11 @@ func (c *ClientSocket) ReadData() (string, error) {
 	resByte, err := ioutil.ReadAll(c.conn)
 	res := string(resByte[0:])
 	return res, err
+}
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err)
+	}
 }
