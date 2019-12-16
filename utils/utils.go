@@ -1,8 +1,7 @@
 package utils
 
 import (
-	"bytes"
-	"encoding/gob"
+	"encoding/json"
 	_ "final-project/message"
 	"fmt"
 	"io"
@@ -10,27 +9,25 @@ import (
 )
 
 func MarshalObject(obj interface{}) []byte {
-	buffPayload := new(bytes.Buffer)
-	goobj := gob.NewEncoder(buffPayload)
-	goobj.Encode(obj)
-	return buffPayload.Bytes()
+	result, _ := json.Marshal(obj)
+	return result
 }
 
 func UnmarshalObject(obj interface{}, data []byte) error {
-	tmpPayload := bytes.NewBuffer(data)
-	d := gob.NewDecoder(tmpPayload)
-	err := d.Decode(obj)
+	err := json.Unmarshal(data, obj)
 	return err
 }
 
 func ReadBytesData(c *net.Conn) ([]byte, error) {
 	conn := *c
 	b := make([]byte, 100)
+	checkByte = make([]byte, 1)
 	nBytes, err := conn.Read(b[0:])
+	checkByte, errCheck := conn.Read(checkByte[0:])
 	fmt.Printf("READ %d bytes\n", nBytes)
-	resBuf := append(b[0:nBytes], 0)
-	fmt.Println(string(resBuf[:]))
 
+	resBuf := append(b[0:nBytes], checkByte)
+	fmt.Println(string(resBuf[:]))
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
@@ -44,10 +41,10 @@ func ReadBytesData(c *net.Conn) ([]byte, error) {
 			break
 		}
 		resBuf = append(resBuf, b[0:nBytes]...)
+		fmt.Println(string(resBuf[:]))
 		if nBytes < 100 {
 			break
 		}
-		fmt.Println(string(resBuf[:]))
 		if err != nil && err != io.EOF {
 			fmt.Println("STUCK HERE ERROR 2")
 			return nil, err

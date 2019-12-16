@@ -59,7 +59,7 @@ func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, pa
 
 	pl := payload.RegisterLoginPayload{Username: username, Password: password}
 
-	buffPayload := utils.MarshalObject(pl)
+	buffPayload := utils.MarshalObject(&pl)
 
 	dataSend := make([]byte, len(buffPayload)+4)
 	copy(dataSend[:4], buffAction.Bytes())

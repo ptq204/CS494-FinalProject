@@ -51,7 +51,7 @@ func handleClient(conn net.Conn) {
 
 	action := binary.BigEndian.Uint32(resBuf[:4])
 
-	fmt.Println(string(resBuf[4:]))
+	// fmt.Println(string(resBuf[4:]))
 
 	switch action {
 	case constant.Login:
