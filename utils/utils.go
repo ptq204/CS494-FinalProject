@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	_ "final-project/message"
 	"fmt"
@@ -18,40 +19,70 @@ func UnmarshalObject(obj interface{}, data []byte) error {
 	return err
 }
 
-func ReadBytesData(c *net.Conn) ([]byte, error) {
+func ReadBytesResponse(c *net.Conn) ([]byte, error) {
 	conn := *c
-	b := make([]byte, 100)
-	checkByte = make([]byte, 1)
-	nBytes, err := conn.Read(b[0:])
-	checkByte, errCheck := conn.Read(checkByte[0:])
-	fmt.Printf("READ %d bytes\n", nBytes)
-
-	resBuf := append(b[0:nBytes], checkByte)
-	fmt.Println(string(resBuf[:]))
-	if err != nil && err != io.EOF {
+	b := make([]byte, 1024)
+	nBytes, err := conn.Read(b[:])
+	if err != nil {
 		return nil, err
 	}
-	if nBytes < 100 {
-		return resBuf, nil
+	return b[:nBytes], nil
+}
+
+func ReadBytesData(c *net.Conn) ([]byte, uint32, error) {
+	conn := *c
+	metadata := make([]byte, 4)
+	b := make([]byte, 100)
+
+	_, err := conn.Read(metadata[0:]) // read data length
+
+	if err != nil {
+		return nil, 20, err
 	}
-	for {
-		nBytes, err := conn.Read(b[0:])
-		fmt.Printf("READ %d bytes\n", nBytes)
-		if string(b[0:nBytes]) == "DONE" {
-			break
+
+	dataLength := binary.BigEndian.Uint32(metadata)
+
+	fmt.Printf("DATA LENGTH FIRST: %d bytes\n", dataLength)
+
+	_, err = conn.Read(metadata[0:]) // read actiontype
+
+	actionType := binary.BigEndian.Uint32(metadata)
+
+	fmt.Printf("ACTION TYPE: %d \n", actionType)
+
+	if err != nil {
+		return nil, 20, err
+	}
+
+	nBytes, err := conn.Read(b[0:])
+
+	if err != nil && err != io.EOF {
+		return nil, 20, err
+	}
+
+	fmt.Printf("READ %d bytes\n", nBytes)
+
+	resBuf := append(b[0:nBytes], 0)
+	fmt.Printf("DATA: %s\n", string(resBuf[:]))
+
+	dataLength -= uint32(nBytes)
+
+	fmt.Printf("DATA LENGTH: %d bytes\n", dataLength)
+
+	for dataLength > 0 {
+		nBytes, err = conn.Read(b[:])
+		if err != nil && err != io.EOF {
+			return nil, 20, err
 		}
 		resBuf = append(resBuf, b[0:nBytes]...)
-		fmt.Println(string(resBuf[:]))
-		if nBytes < 100 {
-			break
-		}
-		if err != nil && err != io.EOF {
-			fmt.Println("STUCK HERE ERROR 2")
-			return nil, err
-		}
+		dataLength -= uint32(nBytes)
+		fmt.Printf("DATA LENGTH: %d bytes\n", dataLength)
 	}
+
+	fmt.Println(string(resBuf[:]))
+
 	fmt.Println("PASSSSS")
-	return resBuf, nil
+	return resBuf, actionType, nil
 }
 
 func TellReadDone(c *net.Conn) {

@@ -5,20 +5,19 @@ const (
 	Unknown = -9999
 
 	// Database error
-	CannotCreateUser       = -101
-	UsernameNotFound  = -102
-	UserNotActive            = -103
-	FilenameNotFound = -104
+	CannotCreateUser    = -101
+	UsernameNotFound    = -102
+	UserNotActive       = -103
+	FilenameNotFound    = -104
 	CannotSetupUserInfo = -105
-	CannotUploadFile     = -106
-	CannotDownloadFile = -107
-
+	CannotUploadFile    = -106
+	CannotDownloadFile  = -107
 
 	// Unauthorized
-	UserNotSignIn       = -200
+	UserNotSignIn = -200
 
 	// BadRequest
-	BusyUser       = -400
+	BusyUser      = -400
 	UsernameExist = -401
 	WrongPassword = -402
 )
@@ -39,9 +38,9 @@ var (
 	names = make(map[int32]string)
 )
 
-type ReturnMessage struct{
-	ReturnCode int32
-	ReturnMessage string
+type ReturnMessage struct {
+	ReturnCode    int32  `json:"return_code"`
+	ReturnMessage string `json:"return_message"`
 }
 
 // GetErrorDecription return description for errorcode

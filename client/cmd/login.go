@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/gob"
 	"final-project/client/manager"
 	"final-project/message"
 	"final-project/server/constant"
@@ -26,13 +24,15 @@ var loginCmd = &cobra.Command{
 		clientService := manager.GetClientService()
 		clientService.SendDataRegisterLogin(constant.Login, args[0], pass)
 		conn := clientService.GetConnection()
-		utils.TellReadDone(&conn)
+		// utils.TellReadDone(&conn)
 		var res message.ReturnMessage
-		resData, err := utils.ReadBytesData(&conn)
-		tmpBuff := bytes.NewBuffer(resData)
-		utils.CheckError(err)
-		d := gob.NewDecoder(tmpBuff)
-		d.Decode(&res)
+		resData, _ := utils.ReadBytesResponse(&conn)
+		err := utils.UnmarshalObject(&res, resData[:])
+		if err != nil {
+			fmt.Println("CANNOT UNMARSHAL")
+			fmt.Println(err.Error())
+			fmt.Println(string(resData[:]))
+		}
 		fmt.Printf("Return message: %d and %s\n", res.ReturnCode, res.ReturnMessage)
 	},
 }

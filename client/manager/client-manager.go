@@ -58,12 +58,20 @@ func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, pa
 	checkError(err)
 
 	pl := payload.RegisterLoginPayload{Username: username, Password: password}
-
 	buffPayload := utils.MarshalObject(&pl)
 
-	dataSend := make([]byte, len(buffPayload)+4)
-	copy(dataSend[:4], buffAction.Bytes())
-	copy(dataSend[4:], []byte(buffPayload))
+	fmt.Println("DATA LENGTHHHH: %s\n", len(buffPayload))
+
+	buffDataLength := new(bytes.Buffer)
+	dataLength := make([]byte, 4)
+	binary.BigEndian.PutUint32(dataLength, uint32(len(buffPayload)))
+	err = binary.Write(buffDataLength, binary.BigEndian, dataLength)
+
+	dataSend := make([]byte, len(buffPayload)+8)
+	copy(dataSend[:4], buffDataLength.Bytes())
+	copy(dataSend[4:8], buffAction.Bytes())
+	copy(dataSend[8:], buffPayload)
+
 	_, err = c.conn.Write([]byte(dataSend))
 
 	return err
@@ -74,12 +82,16 @@ func (c *ClientSocket) SendDataChat(from string, to string, message string) erro
 	err := binary.Write(buffAction, binary.BigEndian, constant.Login)
 
 	pl := payload.ChatPayload{From: from, To: to, Message: message}
-
 	buffPayload := utils.MarshalObject(pl)
 
-	dataSend := make([]byte, len(buffPayload)+4)
-	copy(dataSend[:4], buffAction.Bytes())
-	copy(dataSend[4:], buffPayload)
+	buffDataLength := new(bytes.Buffer)
+	err = binary.Write(buffDataLength, binary.BigEndian, len(buffPayload))
+
+	dataSend := make([]byte, len(buffPayload)+8)
+	copy(dataSend[:4], buffDataLength.Bytes())
+	copy(dataSend[4:8], buffAction.Bytes())
+	copy(dataSend[8:], buffPayload)
+
 	_, err = c.conn.Write([]byte(dataSend))
 
 	return err

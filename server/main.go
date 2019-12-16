@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	configs "final-project/configs"
 	payload "final-project/server/action_payload"
 	"final-project/server/business"
@@ -46,18 +45,16 @@ func main() {
 func handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	resBuf, err := utils.ReadBytesData(&conn)
+	resBuf, action, err := utils.ReadBytesData(&conn)
 	checkError(err)
 
-	action := binary.BigEndian.Uint32(resBuf[:4])
-
-	// fmt.Println(string(resBuf[4:]))
+	fmt.Println("Action type: %d\n", action)
 
 	switch action {
 	case constant.Login:
 		fmt.Println("LOGINNN")
 		var p payload.RegisterLoginPayload
-		err := utils.UnmarshalObject(&p, resBuf[4:])
+		err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
 		if err != nil {
 			checkError(err)
 		}
@@ -65,6 +62,7 @@ func handleClient(conn net.Conn) {
 		res := business.Signin(p.Username, p.Password)
 		resBytes := utils.MarshalObject(res)
 		conn.Write(resBytes)
+		break
 	case constant.Register:
 		fmt.Println("REGISTERR")
 		var p payload.RegisterLoginPayload
