@@ -1,6 +1,6 @@
 package action_payload
 
-type LoginPayload struct {
+type RegisterLoginPayload struct {
 	Username string
 	Password string
 }

@@ -3,10 +3,10 @@ package manager
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/gob"
 	"final-project/configs"
 	payload "final-project/server/action_payload"
 	"final-project/server/constant"
+	"final-project/utils"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -41,6 +41,10 @@ func Connect(config *configs.SocketConfig) error {
 	return err
 }
 
+func (c *ClientSocket) GetConnection() net.Conn {
+	return c.conn
+}
+
 func GetClientService() ClientSocket {
 	return clientService
 }
@@ -53,17 +57,13 @@ func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, pa
 
 	checkError(err)
 
-	pl := payload.LoginPayload{Username: username, Password: password}
+	pl := payload.RegisterLoginPayload{Username: username, Password: password}
 
-	buffPayload := new(bytes.Buffer)
+	buffPayload := utils.MarshalObject(pl)
 
-	goobj := gob.NewEncoder(buffPayload)
-
-	goobj.Encode(pl)
-
-	dataSend := make([]byte, len(buffPayload.Bytes())+4)
+	dataSend := make([]byte, len(buffPayload)+4)
 	copy(dataSend[:4], buffAction.Bytes())
-	copy(dataSend[4:], []byte(buffPayload.Bytes()))
+	copy(dataSend[4:], []byte(buffPayload))
 	_, err = c.conn.Write([]byte(dataSend))
 
 	return err
@@ -75,15 +75,11 @@ func (c *ClientSocket) SendDataChat(from string, to string, message string) erro
 
 	pl := payload.ChatPayload{From: from, To: to, Message: message}
 
-	buffPayload := new(bytes.Buffer)
+	buffPayload := utils.MarshalObject(pl)
 
-	goobj := gob.NewEncoder(buffPayload)
-
-	goobj.Encode(pl)
-
-	dataSend := make([]byte, len(buffPayload.Bytes())+4)
+	dataSend := make([]byte, len(buffPayload)+4)
 	copy(dataSend[:4], buffAction.Bytes())
-	copy(dataSend[4:], []byte(buffPayload.Bytes()))
+	copy(dataSend[4:], buffPayload)
 	_, err = c.conn.Write([]byte(dataSend))
 
 	return err

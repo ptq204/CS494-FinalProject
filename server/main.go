@@ -6,14 +6,16 @@ import (
 	"encoding/gob"
 	configs "final-project/configs"
 	payload "final-project/server/action_payload"
+	"final-project/server/business"
 	"final-project/server/constant"
 	database "final-project/server/db/client"
+	"final-project/utils"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	"io"
 	"net"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -46,22 +48,8 @@ func main() {
 func handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	b := make([]byte, 100)
-	_, err := conn.Read(b[0:])
-	resBuf := append(b[0:], 0)
-	if err != nil && err != io.EOF {
-		checkError(err)
-	}
-	for {
-		_, err = conn.Read(b[:])
-		resBuf = append(resBuf, b[0:]...)
-		if err != nil && err != io.EOF {
-			checkError(err)
-		}
-		if err == io.EOF {
-			break
-		}
-	}
+	resBuf, err := utils.ReadBytesData(&conn)
+	checkError(err)
 
 	action := binary.BigEndian.Uint32(resBuf[:4])
 	tmpPayload := bytes.NewBuffer(resBuf[4:])
@@ -71,16 +59,18 @@ func handleClient(conn net.Conn) {
 	switch action {
 	case constant.Login:
 		fmt.Println("LOGINNN")
-		var p payload.LoginPayload
+		var p payload.RegisterLoginPayload
 		err := d.Decode(&p)
 		if err != nil {
 			checkError(err)
 		}
 		fmt.Printf("User %s login with password: %s\n", p.Username, p.Password)
-		conn.Write([]byte("ACKKKK"))
+		res := business.Signin(p.Username, p.Password)
+		resBytes := utils.MarshalObject(res)
+		conn.Write(resBytes)
 	case constant.Register:
 		fmt.Println("REGISTERR")
-		var p payload.LoginPayload
+		var p payload.RegisterLoginPayload
 		err := d.Decode(&p)
 		if err != nil {
 			checkError(err)
