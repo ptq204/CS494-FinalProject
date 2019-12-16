@@ -3,11 +3,11 @@ package cmd
 import (
 	"bufio"
 	"final-project/client/manager"
+	"final-project/server/constant"
 	"fmt"
+	"github.com/spf13/cobra"
 	"os"
 	_ "strings"
-
-	"github.com/spf13/cobra"
 )
 
 var loginCmd = &cobra.Command{
@@ -19,7 +19,7 @@ var loginCmd = &cobra.Command{
 		fmt.Print(">>Password: ")
 		pass, _ := reader.ReadString('\n')
 		clientService := manager.GetClientService()
-		clientService.SendDataLogin(args[0], pass)
+		clientService.SendDataRegisterLogin(constant.Login, args[0], pass)
 	},
 }
 

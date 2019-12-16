@@ -47,9 +47,9 @@ func handleClient(conn net.Conn) {
 	defer conn.Close()
 
 	b := make([]byte, 100)
-	bytesRead, err := conn.Read(b[0:])
+	_, err := conn.Read(b[0:])
 	resBuf := append(b[0:], 0)
-	if err!= nil && err != io.EOF {
+	if err != nil && err != io.EOF {
 		checkError(err)
 	}
 	for {
@@ -65,7 +65,7 @@ func handleClient(conn net.Conn) {
 
 	action := binary.BigEndian.Uint32(resBuf[:4])
 	tmpPayload := bytes.NewBuffer(resBuf[4:])
-	
+
 	d := gob.NewDecoder(tmpPayload)
 
 	switch action {
@@ -77,6 +77,15 @@ func handleClient(conn net.Conn) {
 			checkError(err)
 		}
 		fmt.Printf("User %s login with password: %s\n", p.Username, p.Password)
+		conn.Write([]byte("ACKKKK"))
+	case constant.Register:
+		fmt.Println("REGISTERR")
+		var p payload.LoginPayload
+		err := d.Decode(&p)
+		if err != nil {
+			checkError(err)
+		}
+		fmt.Printf("User %s register with password: %s\n", p.Username, p.Password)
 		conn.Write([]byte("ACKKKK"))
 	case constant.Chat:
 		fmt.Println("CHATTTTT")

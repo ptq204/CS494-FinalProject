@@ -45,10 +45,10 @@ func GetClientService() ClientSocket {
 	return clientService
 }
 
-func (c *ClientSocket) SendDataLogin(username string, password string) error {
+func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, password string) error {
 	buffAction := new(bytes.Buffer)
 	action := make([]byte, 4)
-	binary.BigEndian.PutUint32(action, int32(constant.Login))
+	binary.BigEndian.PutUint32(action, uint32(actionType))
 	err := binary.Write(buffAction, binary.BigEndian, action)
 
 	checkError(err)
