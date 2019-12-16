@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
-	"encoding/gob"
 	configs "final-project/configs"
 	payload "final-project/server/action_payload"
 	"final-project/server/business"
@@ -52,15 +50,14 @@ func handleClient(conn net.Conn) {
 	checkError(err)
 
 	action := binary.BigEndian.Uint32(resBuf[:4])
-	tmpPayload := bytes.NewBuffer(resBuf[4:])
 
-	d := gob.NewDecoder(tmpPayload)
+	fmt.Println(string(resBuf[4:]))
 
 	switch action {
 	case constant.Login:
 		fmt.Println("LOGINNN")
 		var p payload.RegisterLoginPayload
-		err := d.Decode(&p)
+		err := utils.UnmarshalObject(&p, resBuf[4:])
 		if err != nil {
 			checkError(err)
 		}
@@ -71,7 +68,7 @@ func handleClient(conn net.Conn) {
 	case constant.Register:
 		fmt.Println("REGISTERR")
 		var p payload.RegisterLoginPayload
-		err := d.Decode(&p)
+		err := utils.UnmarshalObject(&p, resBuf[4:])
 		if err != nil {
 			checkError(err)
 		}
@@ -80,14 +77,14 @@ func handleClient(conn net.Conn) {
 	case constant.Chat:
 		fmt.Println("CHATTTTT")
 		var p payload.ChatPayload
-		err := d.Decode(&p)
+		err := utils.UnmarshalObject(&p, resBuf[4:])
 		if err != nil {
 			checkError(err)
 		}
 		fmt.Printf("%s send msg to %s with content: %s\n", p.From, p.To, p.Message)
 		conn.Write([]byte("ACKKKK"))
 	default:
-		fmt.Println(d)
+		fmt.Println("Default")
 	}
 }
 

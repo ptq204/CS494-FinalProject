@@ -26,6 +26,7 @@ var loginCmd = &cobra.Command{
 		clientService := manager.GetClientService()
 		clientService.SendDataRegisterLogin(constant.Login, args[0], pass)
 		conn := clientService.GetConnection()
+		utils.TellReadDone(&conn)
 		var res message.ReturnMessage
 		resData, err := utils.ReadBytesData(&conn)
 		tmpBuff := bytes.NewBuffer(resData)
