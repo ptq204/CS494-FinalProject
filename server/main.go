@@ -4,6 +4,7 @@ import (
 	configs "final-project/configs"
 	"final-project/server/constant"
 	database "final-project/server/db/client"
+	entity "final-project/server/db/entity"
 	service "final-project/server/service"
 	"final-project/utils"
 	"fmt"
@@ -31,7 +32,8 @@ func main() {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	database.GetConnectionDB()
+	db := database.GetConnectionDB()
+	db.AutoMigrate(&entity.User{}, &entity.Channel{}, &entity.Message{}, &entity.File{}, &entity.UserChannel{})
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
