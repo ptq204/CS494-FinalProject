@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"final-project/configs"
 	payload "final-project/server/action_payload"
-	"final-project/server/constant"
 	"final-project/utils"
 	"fmt"
 	"io/ioutil"
@@ -77,15 +76,47 @@ func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, pa
 	return err
 }
 
-func (c *ClientSocket) SendDataChat(from string, to string, message string) error {
+func (c *ClientSocket) SendDataChangePassword(actionType int, username string, oldPassword string, newPassword string) error {
 	buffAction := new(bytes.Buffer)
-	err := binary.Write(buffAction, binary.BigEndian, constant.Login)
+	action := make([]byte, 4)
+	binary.BigEndian.PutUint32(action, uint32(actionType))
+	err := binary.Write(buffAction, binary.BigEndian, action)
 
-	pl := payload.ChatPayload{From: from, To: to, Message: message}
-	buffPayload := utils.MarshalObject(pl)
+	checkError(err)
+
+	pl := payload.ChangePasswordPayload{OldPassword: oldPassword, NewPassword: newPassword}
+	buffPayload := utils.MarshalObject(&pl)
 
 	buffDataLength := new(bytes.Buffer)
-	err = binary.Write(buffDataLength, binary.BigEndian, len(buffPayload))
+	dataLength := make([]byte, 4)
+	binary.BigEndian.PutUint32(dataLength, uint32(len(buffPayload)))
+	err = binary.Write(buffDataLength, binary.BigEndian, dataLength)
+
+	dataSend := make([]byte, len(buffPayload)+8)
+	copy(dataSend[:4], buffDataLength.Bytes())
+	copy(dataSend[4:8], buffAction.Bytes())
+	copy(dataSend[8:], buffPayload)
+
+	_, err = c.conn.Write([]byte(dataSend))
+
+	return err
+}
+
+func (c *ClientSocket) SendDataChat(actionType int, from string, to string, message string) error {
+	buffAction := new(bytes.Buffer)
+	action := make([]byte, 4)
+	binary.BigEndian.PutUint32(action, uint32(actionType))
+	err := binary.Write(buffAction, binary.BigEndian, action)
+
+	checkError(err)
+
+	pl := payload.ChatPayload{From: from, To: to, Message: message}
+	buffPayload := utils.MarshalObject(&pl)
+
+	buffDataLength := new(bytes.Buffer)
+	dataLength := make([]byte, 4)
+	binary.BigEndian.PutUint32(dataLength, uint32(len(buffPayload)))
+	err = binary.Write(buffDataLength, binary.BigEndian, dataLength)
 
 	dataSend := make([]byte, len(buffPayload)+8)
 	copy(dataSend[:4], buffDataLength.Bytes())
