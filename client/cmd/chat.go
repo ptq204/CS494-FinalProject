@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"final-project/client/manager"
+	"final-project/server/constant"
 	"fmt"
 	"os"
 	_ "strings"
@@ -20,7 +21,7 @@ var chatCmd = &cobra.Command{
 			fmt.Print(">>Me: ")
 			msg, _ := reader.ReadString('\n')
 			clientService := manager.GetClientService()
-			clientService.SendDataChat("quyen", args[0], msg)
+			clientService.SendDataChat(constant.Chat, args[0], msg, "bao")
 			res, err := clientService.ReadData()
 			if err != nil {
 				break

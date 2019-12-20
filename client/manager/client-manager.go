@@ -59,7 +59,7 @@ func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, pa
 	pl := payload.RegisterLoginPayload{Username: username, Password: password}
 	buffPayload := utils.MarshalObject(&pl)
 
-	fmt.Println("DATA LENGTHHHH: %s\n", len(buffPayload))
+	fmt.Printf("DATA LENGTHHHH: %d\n", len(buffPayload))
 
 	buffDataLength := new(bytes.Buffer)
 	dataLength := make([]byte, 4)
@@ -84,7 +84,7 @@ func (c *ClientSocket) SendDataChangePassword(actionType int, username string, o
 
 	checkError(err)
 
-	pl := payload.ChangePasswordPayload{OldPassword: oldPassword, NewPassword: newPassword}
+	pl := payload.ChangePasswordPayload{Username: username, OldPassword: oldPassword, NewPassword: newPassword}
 	buffPayload := utils.MarshalObject(&pl)
 
 	buffDataLength := new(bytes.Buffer)

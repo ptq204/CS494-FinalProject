@@ -10,8 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func ChangePassword(username string, password string) message.ReturnMessage {
-	// signin
+func ChangePassword(username string, oldPassword string, newPassword string) message.ReturnMessage {
 	var user entity.User
 	db := client.GetConnectionDB()
 	err := db.Table(define.UserTable).Where("username = ?", username).First(&user).Error
@@ -28,13 +27,14 @@ func ChangePassword(username string, password string) message.ReturnMessage {
 		}
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
 		return message.ReturnMessage{
 			ReturnCode:    message.WrongPassword,
 			ReturnMessage: message.GetMessageDecription(message.WrongPassword),
 		}
 	}
-	err = db.Model(&user).Update("is_active", false).Error
+	bytes, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.MinCost)
+	err = db.Model(&user).Update("password", string(bytes)).Error
 	if err != nil {
 		return message.ReturnMessage{
 			ReturnCode:    message.Unknown,

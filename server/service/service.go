@@ -39,17 +39,17 @@ func HandleRegister(c *net.Conn, resBuf []byte) error {
 }
 
 func HandleChangePassword(c *net.Conn, resBuf []byte) error {
-	// fmt.Println("CHANGE_PASSWORD")
-	// conn := *c
-	// var p payload.ChangePasswordPayload
-	// err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Printf("User %s change password from %s to %s\n", p.Username, p.OldPassword, p.NewPassword)
-	// res := business.Register(p.Username, p.Password)
-	// resBytes := utils.MarshalObject(res)
-	// conn.Write(resBytes)
+	fmt.Println("CHANGE_PASSWORD")
+	conn := *c
+	var p payload.ChangePasswordPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	fmt.Printf("User %s change password from %s to %s\n", p.Username, p.OldPassword, p.NewPassword)
+	res := business.ChangePassword(p.Username, p.OldPassword, p.NewPassword)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
 	return nil
 }
 

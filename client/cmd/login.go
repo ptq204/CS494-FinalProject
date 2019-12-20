@@ -8,6 +8,7 @@ import (
 	"final-project/utils"
 	"fmt"
 	"os"
+	"strings"
 	_ "strings"
 
 	"github.com/spf13/cobra"
@@ -21,6 +22,7 @@ var loginCmd = &cobra.Command{
 		fmt.Println("CHECK LOGINNNN")
 		fmt.Print(">>Password: ")
 		pass, _ := reader.ReadString('\n')
+		pass = strings.TrimRight(pass, "\n")
 		clientService := manager.GetClientService()
 		clientService.SendDataRegisterLogin(constant.Login, args[0], pass)
 		conn := clientService.GetConnection()
