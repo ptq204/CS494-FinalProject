@@ -16,3 +16,7 @@ type ChatPayload struct {
 	To      string
 	Message string
 }
+
+type UserPayload struct {
+	Username string
+}

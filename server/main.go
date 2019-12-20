@@ -65,6 +65,18 @@ func handleClient(conn net.Conn) {
 	case constant.Chat:
 		service.HandleChat(&conn, resBuf)
 		break
+	case constant.FindUser:
+		service.HandleFindUser(&conn, resBuf)
+	case constant.UserOnline:
+		service.HandleOnlineUser(&conn, resBuf)
+	case constant.UserBirthday:
+		service.HandleUserBirthday(&conn, resBuf)
+	case constant.UserName:
+		service.HandleUserName(&conn, resBuf)
+	case constant.UserNote:
+		service.HandleUserNote(&conn, resBuf)
+	case constant.UserInfo:
+		service.HandleUserInfo(&conn, resBuf)
 	default:
 		fmt.Println("Default")
 	}

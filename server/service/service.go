@@ -64,3 +64,86 @@ func HandleChat(c *net.Conn, resBuf []byte) error {
 	// conn.Write([]byte("ACKKKK"))
 	return nil
 }
+
+func HandleFindUser(c *net.Conn, resBuf []byte) error {
+	fmt.Println("FIND USER")
+	conn := *c
+	var p payload.UserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.FindUser(p.Username)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}
+func HandleOnlineUser(c *net.Conn, resBuf []byte) error {
+	fmt.Println("ONLINE USER")
+	conn := *c
+	var p payload.UserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.OnlineUser(p.Username)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}
+
+func HandleUserBirthday(c *net.Conn, resBuf []byte) error {
+	fmt.Println("USER BIRTHDAY")
+	conn := *c
+	var p payload.UserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.UserBirthday(p.Username)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}
+
+func HandleUserName(c *net.Conn, resBuf []byte) error {
+	fmt.Println("USER NAME")
+	conn := *c
+	var p payload.UserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.UserName(p.Username)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}
+
+func HandleUserNote(c *net.Conn, resBuf []byte) error {
+	fmt.Println("USER NOTE")
+	conn := *c
+	var p payload.UserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.UserNote(p.Username)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}
+
+func HandleUserInfo(c *net.Conn, resBuf []byte) error {
+	fmt.Println("USER INFO")
+	conn := *c
+	var p payload.UserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.UserInfo(p.Username)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}

@@ -34,7 +34,6 @@ var changePasswordCmd = &cobra.Command{
 		clientService := manager.GetClientService()
 		clientService.SendDataChangePassword(constant.Change_Password, user, passStr, newPassStr)
 		conn := clientService.GetConnection()
-		// utils.TellReadDone(&conn)
 		var res message.ReturnMessage
 		resData, _ := utils.ReadBytesResponse(&conn)
 		err := utils.UnmarshalObject(&res, resData[:])

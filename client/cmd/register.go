@@ -22,11 +22,11 @@ var registerCmd = &cobra.Command{
 		user, _ := cmd.Flags().GetString("encrypt")
 		passStr := ""
 		if user != "" {
-			passStr = getLoginEncryptPassword()
+			passStr = getRegisterEncryptPassword()
 		} else {
 			fmt.Println(args[0])
 			user = args[0]
-			passStr = getLoginUnencryptPassword()
+			passStr = getRegisterUnencryptPassword()
 		}
 		fmt.Println("CHECK REGISTER")
 		clientService := manager.GetClientService()

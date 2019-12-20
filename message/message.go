@@ -1,5 +1,7 @@
 package message
 
+import "final-project/server/db/entity"
+
 const (
 	Success = 1
 	Unknown = -9999
@@ -41,6 +43,16 @@ var (
 type ReturnMessage struct {
 	ReturnCode    int32  `json:"return_code"`
 	ReturnMessage string `json:"return_message"`
+}
+
+type CheckUserResponse struct {
+	Information string `json:"info"`
+	ReturnMessage
+}
+
+type UserResponseInfo struct {
+	entity.User
+	ReturnMessage
 }
 
 // GetErrorDecription return description for errorcode
