@@ -84,7 +84,7 @@ func (c *ClientSocket) SendDataChangePassword(actionType int, username string, o
 
 	checkError(err)
 
-	pl := payload.ChangePasswordPayload{OldPassword: oldPassword, NewPassword: newPassword}
+	pl := payload.ChangePasswordPayload{Username: username, OldPassword: oldPassword, NewPassword: newPassword}
 	buffPayload := utils.MarshalObject(&pl)
 
 	buffDataLength := new(bytes.Buffer)

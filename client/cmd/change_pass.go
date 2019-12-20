@@ -19,7 +19,7 @@ var changePasswordCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Println("CHECK CHANGE PASSWORD")
-		fmt.Print(">>password: ")
+		fmt.Print(">> password: ")
 		pass, _ := reader.ReadString('\n')
 		fmt.Print(">> new password: ")
 		newPass, _ := reader.ReadString('\n')
@@ -40,5 +40,5 @@ var changePasswordCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(changePasswordCmd)
 }

@@ -5,16 +5,20 @@ import (
 	"final-project/server/db/client"
 	"final-project/server/db/entity"
 	define "final-project/server/define"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func ChangePassword(username string, password string) message.ReturnMessage {
+func ChangePassword(username string, oldPassword string, newPassword string) message.ReturnMessage {
 	// signin
 	var user entity.User
 	db := client.GetConnectionDB()
 	err := db.Table(define.UserTable).Where("username = ?", username).First(&user).Error
+
+	fmt.Println(user)
+
 	if gorm.IsRecordNotFoundError(err) {
 		return message.ReturnMessage{
 			ReturnCode:    message.UsernameNotFound,
@@ -28,7 +32,7 @@ func ChangePassword(username string, password string) message.ReturnMessage {
 		}
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
 		return message.ReturnMessage{
 			ReturnCode:    message.WrongPassword,
 			ReturnMessage: message.GetMessageDecription(message.WrongPassword),
