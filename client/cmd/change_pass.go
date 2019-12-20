@@ -1,16 +1,15 @@
 package cmd
 
 import (
-	"bufio"
 	"final-project/client/manager"
 	"final-project/message"
 	"final-project/server/constant"
 	"final-project/utils"
 	"fmt"
-	"os"
 	"strings"
 	_ "strings"
 
+	"github.com/howeyc/gopass"
 	"github.com/spf13/cobra"
 )
 
@@ -19,16 +18,15 @@ var changePasswordCmd = &cobra.Command{
 	Short: "Change password",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(args[0])
-		reader := bufio.NewReader(os.Stdin)
 		fmt.Println("CHECK CHANGE PASSWORD")
 		fmt.Print(">>password: ")
-		pass, _ := reader.ReadString('\n')
-		pass = strings.TrimRight(pass, "\n")
+		pass, _ := gopass.GetPasswdMasked()
+		passStr := strings.TrimRight(string(pass), "\n")
 		fmt.Print(">> new password: ")
-		newPass, _ := reader.ReadString('\n')
-		newPass = strings.TrimRight(newPass, "\n")
+		newPass, _ := gopass.GetPasswdMasked()
+		newPassStr := strings.TrimRight(string(newPass), "\n")
 		clientService := manager.GetClientService()
-		clientService.SendDataChangePassword(constant.Change_Password, args[0], pass, newPass)
+		clientService.SendDataChangePassword(constant.Change_Password, args[0], passStr, newPassStr)
 		conn := clientService.GetConnection()
 		// utils.TellReadDone(&conn)
 		var res message.ReturnMessage
