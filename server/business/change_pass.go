@@ -12,7 +12,10 @@ import (
 )
 
 func ChangePassword(username string, oldPassword string, newPassword string) message.ReturnMessage {
+<<<<<<< HEAD
 	// signin
+=======
+>>>>>>> daebdd76161a97160c4e76a43b7481e4dd49cefc
 	var user entity.User
 	db := client.GetConnectionDB()
 	err := db.Table(define.UserTable).Where("username = ?", username).First(&user).Error
@@ -38,7 +41,8 @@ func ChangePassword(username string, oldPassword string, newPassword string) mes
 			ReturnMessage: message.GetMessageDecription(message.WrongPassword),
 		}
 	}
-	err = db.Model(&user).Update("is_active", false).Error
+	bytes, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.MinCost)
+	err = db.Model(&user).Update("password", string(bytes)).Error
 	if err != nil {
 		return message.ReturnMessage{
 			ReturnCode:    message.Unknown,

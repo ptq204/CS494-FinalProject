@@ -20,7 +20,11 @@ var chatCmd = &cobra.Command{
 			fmt.Print(">>Me: ")
 			msg, _ := reader.ReadString('\n')
 			clientService := manager.GetClientService()
+<<<<<<< HEAD
 			clientService.SendDataChat(constant.Chat, "quyen", args[0], msg)
+=======
+			clientService.SendDataChat(constant.Chat, args[0], msg, "bao")
+>>>>>>> daebdd76161a97160c4e76a43b7481e4dd49cefc
 			res, err := clientService.ReadData()
 			if err != nil {
 				break

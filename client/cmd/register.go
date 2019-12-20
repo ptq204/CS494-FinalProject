@@ -8,8 +8,10 @@ import (
 	"final-project/utils"
 	"fmt"
 	"os"
+	"strings"
 	_ "strings"
 
+	"github.com/howeyc/gopass"
 	"github.com/spf13/cobra"
 )
 
@@ -17,17 +19,22 @@ var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "register new account",
 	Run: func(cmd *cobra.Command, args []string) {
-		reader := bufio.NewReader(os.Stdin)
+		user, _ := cmd.Flags().GetString("encrypt")
+		passStr := ""
+		if user != "" {
+			passStr = getRegisterEncryptPassword()
+		} else {
+			fmt.Println(args[0])
+			user = args[0]
+			passStr = getRegisterUnencryptPassword()
+		}
 		fmt.Println("CHECK REGISTER")
-		fmt.Print(">>Password: ")
-		pass, _ := reader.ReadString('\n')
 		clientService := manager.GetClientService()
-		clientService.SendDataRegisterLogin(constant.Register, args[0], pass)
+		clientService.SendDataRegisterLogin(constant.Register, user, passStr)
 		conn := clientService.GetConnection()
-
+		// utils.TellReadDone(&conn)
 		var res message.ReturnMessage
 		resData, _ := utils.ReadBytesResponse(&conn)
-
 		err := utils.UnmarshalObject(&res, resData[:])
 		if err != nil {
 			fmt.Println("CANNOT UNMARSHAL")
@@ -38,6 +45,21 @@ var registerCmd = &cobra.Command{
 	},
 }
 
+func getRegisterEncryptPassword() string {
+	fmt.Print(">>password: ")
+	pass, _ := gopass.GetPasswdMasked()
+	passStr := strings.TrimRight(string(pass), "\n")
+	return passStr
+}
+
+func getRegisterUnencryptPassword() string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(">>password: ")
+	pass, _ := reader.ReadString('\n')
+	pass = strings.TrimRight(pass, "\n")
+	return pass
+}
 func init() {
+	registerCmd.PersistentFlags().StringP("encrypt", "e", "", "encrypt password before sending")
 	rootCmd.AddCommand(registerCmd)
 }

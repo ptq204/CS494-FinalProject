@@ -8,6 +8,7 @@ import (
 	service "final-project/server/service"
 	"final-project/utils"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
 
@@ -49,7 +50,7 @@ func handleClient(conn net.Conn) {
 	resBuf, action, err := utils.ReadBytesData(&conn)
 	checkError(err)
 
-	fmt.Println("Action type: %d\n", action)
+	fmt.Printf("Action type: %d\n", action)
 
 	switch action {
 	case constant.Login:
@@ -64,13 +65,25 @@ func handleClient(conn net.Conn) {
 	case constant.Chat:
 		service.HandleChat(&conn, resBuf)
 		break
+	case constant.FindUser:
+		service.HandleFindUser(&conn, resBuf)
+	case constant.UserOnline:
+		service.HandleOnlineUser(&conn, resBuf)
+	case constant.UserBirthday:
+		service.HandleUserBirthday(&conn, resBuf)
+	case constant.UserName:
+		service.HandleUserName(&conn, resBuf)
+	case constant.UserNote:
+		service.HandleUserNote(&conn, resBuf)
+	case constant.UserInfo:
+		service.HandleUserInfo(&conn, resBuf)
 	default:
 		fmt.Println("Default")
 	}
 }
 
 func checkError(err error) {
-	if err != nil {
+	if err != nil && err != io.EOF {
 		fmt.Println(err.Error())
 		panic(err)
 	}

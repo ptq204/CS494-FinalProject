@@ -9,7 +9,21 @@
             "type": "go",
             "request": "attach",
             "mode": "local",
-            "processId": 15097
+            "processId": 41757
         }
     ]
 }
+// {
+// 	"version": "0.2.0",
+// 	"configurations": [
+// 		{
+// 			"name": "Launch",
+// 			"type": "go",
+// 			"request": "launch",
+// 			"mode": "auto",
+// 			"program": "${fileDirname}",
+// 			"env": {},
+// 			"args": []
+// 		}
+// 	]
+// }
