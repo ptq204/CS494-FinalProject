@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"bufio"
 	"final-project/client/manager"
 	"final-project/message"
 	"final-project/server/constant"
 	"final-project/utils"
 	"fmt"
+	"os"
 	"strings"
 	_ "strings"
 
@@ -16,17 +18,21 @@ import (
 var changePasswordCmd = &cobra.Command{
 	Use:   "change_password",
 	Short: "Change password",
+	Long:  "User can change password by encrypting through flag encrypt",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(args[0])
+		user, _ := cmd.Flags().GetString("encrypt")
+		passStr := ""
+		newPassStr := ""
+		if user != "" {
+			passStr, newPassStr = getEncryptPassword()
+		} else {
+			fmt.Println(args[0])
+			user = args[0]
+			passStr, newPassStr = getUnencryptPassword()
+		}
 		fmt.Println("CHECK CHANGE PASSWORD")
-		fmt.Print(">>password: ")
-		pass, _ := gopass.GetPasswdMasked()
-		passStr := strings.TrimRight(string(pass), "\n")
-		fmt.Print(">> new password: ")
-		newPass, _ := gopass.GetPasswdMasked()
-		newPassStr := strings.TrimRight(string(newPass), "\n")
 		clientService := manager.GetClientService()
-		clientService.SendDataChangePassword(constant.Change_Password, args[0], passStr, newPassStr)
+		clientService.SendDataChangePassword(constant.Change_Password, user, passStr, newPassStr)
 		conn := clientService.GetConnection()
 		// utils.TellReadDone(&conn)
 		var res message.ReturnMessage
@@ -41,6 +47,28 @@ var changePasswordCmd = &cobra.Command{
 	},
 }
 
+func getEncryptPassword() (string, string) {
+	fmt.Print(">>password: ")
+	pass, _ := gopass.GetPasswdMasked()
+	passStr := strings.TrimRight(string(pass), "\n")
+	fmt.Print(">>new password: ")
+	newPass, _ := gopass.GetPasswdMasked()
+	newPassStr := strings.TrimRight(string(newPass), "\n")
+	return passStr, newPassStr
+}
+
+func getUnencryptPassword() (string, string) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(">>password: ")
+	pass, _ := reader.ReadString('\n')
+	pass = strings.TrimRight(pass, "\n")
+	fmt.Print(">> new password: ")
+	newPass, _ := reader.ReadString('\n')
+	newPass = strings.TrimRight(newPass, "\n")
+	return pass, newPass
+}
+
 func init() {
+	changePasswordCmd.PersistentFlags().StringP("encrypt", "e", "", "encrypt password before sending")
 	rootCmd.AddCommand(changePasswordCmd)
 }
