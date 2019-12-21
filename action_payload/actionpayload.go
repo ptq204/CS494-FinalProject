@@ -12,9 +12,11 @@ type ChangePasswordPayload struct {
 }
 
 type ChatPayload struct {
-	From    string `json:"from"`
-	To      string `json:"to"`
-	Message string `json:"message"`
+	From      string   `json:"from"`
+	To        []string `json:"to"`
+	Message   string   `json:"message"`
+	MultiUser int      `json:"multi_user"`
+	Encrypt   int      `json:"encrypt"`
 }
 
 type UserPayload struct {
@@ -24,4 +26,7 @@ type UserPayload struct {
 type SetupUserPayload struct {
 	Username string `json:"username"`
 	NewInfo  string `json:"new_info"`
+}
+
+type DisconnectPayload struct {
 }

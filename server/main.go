@@ -8,13 +8,15 @@ import (
 	service "final-project/server/service"
 	"final-project/utils"
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	"golang.org/x/sync/syncmap"
 	"io"
 	"net"
 	"strconv"
-
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
+
+var clientConns syncmap.Map = syncmap.Map{}
 
 func main() {
 	config := &configs.SocketConfig{}
@@ -47,40 +49,50 @@ func main() {
 func handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	resBuf, action, err := utils.ReadBytesData(&conn)
-	checkError(err)
+	check := false
+	for {
+		if check {
+			break
+		}
+		resBuf, action, err := utils.ReadBytesData(&conn)
+		checkError(err)
 
-	fmt.Printf("Action type: %d\n", action)
+		fmt.Printf("Action type: %d\n", action)
 
-	switch action {
-	case constant.Login:
-		service.HandleLogin(&conn, resBuf)
-	case constant.Register:
-		service.HandleRegister(&conn, resBuf)
-	case constant.Change_Password:
-		service.HandleChangePassword(&conn, resBuf)
-	case constant.Chat:
-		service.HandleChat(&conn, resBuf)
-	case constant.FindUser:
-		service.HandleFindUser(&conn, resBuf)
-	case constant.UserOnline:
-		service.HandleOnlineUser(&conn, resBuf)
-	case constant.UserBirthday:
-		service.HandleUserBirthday(&conn, resBuf)
-	case constant.UserName:
-		service.HandleUserName(&conn, resBuf)
-	case constant.UserNote:
-		service.HandleUserNote(&conn, resBuf)
-	case constant.UserInfo:
-		service.HandleUserInfo(&conn, resBuf)
-	case constant.SetupName:
-		service.HandleSetupUserName(&conn, resBuf)
-	case constant.SetupDate:
-		service.HandleSetupUserDate(&conn, resBuf)
-	case constant.SetupNote:
-		service.HandleSetupUserNote(&conn, resBuf)
-	default:
-		fmt.Println("Default")
+		switch action {
+		case constant.Login:
+			service.HandleLogin(&conn, resBuf, &clientConns)
+		case constant.Register:
+			service.HandleRegister(&conn, resBuf)
+		case constant.Change_Password:
+			service.HandleChangePassword(&conn, resBuf)
+		case constant.Chat:
+			service.HandleChat(&conn, resBuf, &clientConns)
+		case constant.FindUser:
+			service.HandleFindUser(&conn, resBuf)
+		case constant.UserOnline:
+			service.HandleOnlineUser(&conn, resBuf)
+		case constant.UserBirthday:
+			service.HandleUserBirthday(&conn, resBuf)
+		case constant.UserName:
+			service.HandleUserName(&conn, resBuf)
+		case constant.UserNote:
+			service.HandleUserNote(&conn, resBuf)
+		case constant.UserInfo:
+			service.HandleUserInfo(&conn, resBuf)
+		case constant.SetupName:
+			service.HandleSetupUserName(&conn, resBuf)
+		case constant.SetupDate:
+			service.HandleSetupUserDate(&conn, resBuf)
+		case constant.SetupNote:
+			service.HandleSetupUserNote(&conn, resBuf)
+		case constant.Exit:
+			check = true
+			clientConns.Delete(&conn)
+		default:
+			check = true
+			fmt.Println("Default")
+		}
 	}
 }
 

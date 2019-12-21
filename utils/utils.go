@@ -1,12 +1,18 @@
 package utils
 
 import (
+	"bufio"
 	"encoding/binary"
+	"encoding/csv"
 	"encoding/json"
 	_ "final-project/message"
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"strings"
+
+	"github.com/howeyc/gopass"
 )
 
 func MarshalObject(obj interface{}) []byte {
@@ -90,9 +96,80 @@ func TellReadDone(c *net.Conn) {
 	conn.Write([]byte("DONE"))
 }
 
+func SaveLocalValueToFile(key string, value string) error {
+	fileName := "../client/.local"
+	var f *os.File
+	var err error
+	if _, err = os.Stat(fileName); os.IsNotExist(err) {
+		f, err = os.Create(fileName)
+		if err != nil {
+			return err
+		}
+	} else {
+		f, err = os.OpenFile(fileName, os.O_WRONLY, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = f.WriteString(key + ": ")
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(value)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return nil
+}
+
+func ReadLocalValueInFile(key string) (string, error) {
+	fileName := "../client/.local"
+	f, err := os.Open(fileName)
+	if err != nil {
+		return "", err
+	}
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		keyVal := strings.Split(line, " : ")
+		if keyVal[0] == key {
+			return keyVal[1], nil
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return "", nil
+}
+
 func CheckError(err error) {
 	if err != nil {
 		fmt.Println(err.Error())
 		panic(err)
 	}
+}
+
+func IsExitCommand(command string) bool {
+	return command == "exit" || command == "quit" || command == "q"
+}
+
+func InputPassword() string {
+	fmt.Print(">> password: ")
+	pass, _ := gopass.GetPasswdMasked()
+	passStr := strings.TrimRight(string(pass), "\n")
+	return passStr
+}
+
+func InputNewPassword() string {
+	fmt.Print(">> new password: ")
+	pass, _ := gopass.GetPasswdMasked()
+	passStr := strings.TrimRight(string(pass), "\n")
+	return passStr
+}
+
+func SplitCommand(s string) ([]string, error) {
+	r := csv.NewReader(strings.NewReader(s))
+	r.Comma = ' ' // space
+	return r.Read()
 }

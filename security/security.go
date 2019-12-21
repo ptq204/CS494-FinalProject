@@ -8,16 +8,17 @@ import (
 )
 
 func GenerateToken(fields map[string]string) (string, error) {
-	var claims jwt.MapClaims
+	var claims jwt.MapClaims = make(map[string]interface{})
 	for k, v := range fields {
+		fmt.Printf("%s %s\n", k, v)
 		claims[k] = v
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString(server_secret.SECRET_TOKEN)
+	tokenStr, err := token.SignedString([]byte(server_secret.SECRET_TOKEN))
 	return tokenStr, err
 }
 
-func ParseToken(tokenStr string) (jwt.Claims, error) {
+func ParseToken(tokenStr string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
