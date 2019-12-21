@@ -3,6 +3,7 @@ module final-project
 go 1.13
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/jinzhu/gorm v1.9.11
 	github.com/mitchellh/go-homedir v1.1.0

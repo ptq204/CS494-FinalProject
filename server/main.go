@@ -2,7 +2,7 @@ package main
 
 import (
 	configs "final-project/configs"
-	"final-project/server/constant"
+	"final-project/constant"
 	database "final-project/server/db/client"
 	entity "final-project/server/db/entity"
 	service "final-project/server/service"
@@ -55,16 +55,12 @@ func handleClient(conn net.Conn) {
 	switch action {
 	case constant.Login:
 		service.HandleLogin(&conn, resBuf)
-		break
 	case constant.Register:
 		service.HandleRegister(&conn, resBuf)
-		break
 	case constant.Change_Password:
 		service.HandleChangePassword(&conn, resBuf)
-		break
 	case constant.Chat:
 		service.HandleChat(&conn, resBuf)
-		break
 	case constant.FindUser:
 		service.HandleFindUser(&conn, resBuf)
 	case constant.UserOnline:
@@ -77,6 +73,12 @@ func handleClient(conn net.Conn) {
 		service.HandleUserNote(&conn, resBuf)
 	case constant.UserInfo:
 		service.HandleUserInfo(&conn, resBuf)
+	case constant.SetupName:
+		service.HandleSetupUserName(&conn, resBuf)
+	case constant.SetupDate:
+		service.HandleSetupUserDate(&conn, resBuf)
+	case constant.SetupNote:
+		service.HandleSetupUserNote(&conn, resBuf)
 	default:
 		fmt.Println("Default")
 	}

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"final-project/configs"
-	payload "final-project/server/action_payload"
+	payload "final-project/action_payload"
 	"final-project/utils"
 	"fmt"
 	"io/ioutil"
@@ -13,7 +13,8 @@ import (
 )
 
 type ClientSocket struct {
-	conn net.Conn
+	conn         net.Conn
+	currUsername string
 }
 
 type ClientManager struct{}
@@ -34,7 +35,8 @@ func Connect(config *configs.SocketConfig) error {
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 
 	clientService = ClientSocket{
-		conn: conn,
+		conn:         conn,
+		currUsername: "",
 	}
 
 	return err
@@ -42,6 +44,14 @@ func Connect(config *configs.SocketConfig) error {
 
 func (c *ClientSocket) GetConnection() net.Conn {
 	return c.conn
+}
+
+func (c *ClientSocket) SetCurrUserName(username string) {
+	c.currUsername = username
+}
+
+func (c *ClientSocket) GetCurrUserName() string {
+	return c.currUsername
 }
 
 func GetClientService() ClientSocket {
@@ -137,6 +147,32 @@ func (c *ClientSocket) CheckUser(actionType int, username string) error {
 	checkError(err)
 
 	pl := payload.UserPayload{Username: username}
+	buffPayload := utils.MarshalObject(&pl)
+
+	buffDataLength := new(bytes.Buffer)
+	dataLength := make([]byte, 4)
+	binary.BigEndian.PutUint32(dataLength, uint32(len(buffPayload)))
+	err = binary.Write(buffDataLength, binary.BigEndian, dataLength)
+
+	dataSend := make([]byte, len(buffPayload)+8)
+	copy(dataSend[:4], buffDataLength.Bytes())
+	copy(dataSend[4:8], buffAction.Bytes())
+	copy(dataSend[8:], buffPayload)
+
+	_, err = c.conn.Write([]byte(dataSend))
+
+	return err
+}
+
+func (c *ClientSocket) SetupInfo(actionType int, username string, newInfo string) error {
+	buffAction := new(bytes.Buffer)
+	action := make([]byte, 4)
+	binary.BigEndian.PutUint32(action, uint32(actionType))
+	err := binary.Write(buffAction, binary.BigEndian, action)
+
+	checkError(err)
+
+	pl := payload.SetupUserPayload{Username: username, NewInfo: newInfo}
 	buffPayload := utils.MarshalObject(&pl)
 
 	buffDataLength := new(bytes.Buffer)

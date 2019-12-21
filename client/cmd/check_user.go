@@ -3,7 +3,7 @@ package cmd
 import (
 	"final-project/client/manager"
 	"final-project/message"
-	"final-project/server/constant"
+	"final-project/constant"
 	"final-project/utils"
 	"fmt"
 	_ "strings"
@@ -15,39 +15,42 @@ var checkUserCmd = &cobra.Command{
 	Use:   "check_user",
 	Short: "Check user info",
 	Run: func(cmd *cobra.Command, args []string) {
-		username, _ := cmd.Flags().GetString("find")
+		if len(args) != 0 {
+			fmt.Println("Wrong command's format")
+			return
+		}
+
 		clientService := manager.GetClientService()
-		if username != "" {
-			fmt.Println("FIND IF USER IS EXISTED")
-			clientService.CheckUser(constant.FindUser, username)
-		} else {
-			username, _ = cmd.Flags().GetString("online")
+
+		checkUserFlags := []string{
+			"find", "online", "show_date", "show_note", "show_name", "show",
+		}
+		checkUserActions := []int{
+			constant.FindUser,
+			constant.UserOnline,
+			constant.UserBirthday,
+			constant.UserNote,
+			constant.UserName,
+			constant.UserInfo,
+		}
+
+		checkShowInfo := false
+		var username string
+
+		for idx, f := range checkUserFlags {
+			username, _ = cmd.Flags().GetString(f)
 			if username != "" {
-				fmt.Println("CHECK IF USER ONLINE")
-				clientService.CheckUser(constant.UserOnline, username)
-			} else {
-				username, _ = cmd.Flags().GetString("show_date")
-				if username != "" {
-					fmt.Println("SHOW USER'S BIRTHDAY")
-					clientService.CheckUser(constant.UserBirthday, username)
-				} else {
-					username, _ = cmd.Flags().GetString("show_note")
-					if username != "" {
-						fmt.Println("SHOW USER'S NOTE")
-						clientService.CheckUser(constant.UserNote, username)
-					} else {
-						username, _ = cmd.Flags().GetString("show_name")
-						if username != "" {
-							fmt.Println("SHOW USER'S NAME")
-							clientService.CheckUser(constant.UserName, username)
-						}
-					}
+				clientService.CheckUser(checkUserActions[idx], username)
+				if checkUserActions[idx] == constant.UserInfo {
+					checkShowInfo = true
 				}
+				break
 			}
 		}
-		conn := clientService.GetConnection()
-		if username != "" {
+
+		if !checkShowInfo {
 			var res message.CheckUserResponse
+			conn := clientService.GetConnection()
 			resData, _ := utils.ReadBytesResponse(&conn)
 			err := utils.UnmarshalObject(&res, resData[:])
 			if err != nil {
@@ -57,20 +60,16 @@ var checkUserCmd = &cobra.Command{
 			}
 			fmt.Printf("Info: %s with %d and %s\n", res.Information, res.ReturnMessage.ReturnCode, res.ReturnMessage.ReturnMessage)
 		} else {
-			username, _ = cmd.Flags().GetString("show")
-			if username != "" {
-				fmt.Println("SHOW USER'S INFO")
-				clientService.CheckUser(constant.UserInfo, username)
-				var res message.UserResponseInfo
-				resData, _ := utils.ReadBytesResponse(&conn)
-				err := utils.UnmarshalObject(&res, resData[:])
-				if err != nil {
-					fmt.Println("CANNOT UNMARSHAL")
-					fmt.Println(err.Error())
-					fmt.Println(string(resData[:]))
-				}
-				fmt.Print("User info: ", res.User, " with ", res.ReturnCode, " and ", res.ReturnMessage, "\n")
+			var res message.UserResponseInfo
+			conn := clientService.GetConnection()
+			resData, _ := utils.ReadBytesResponse(&conn)
+			err := utils.UnmarshalObject(&res, resData[:])
+			if err != nil {
+				fmt.Println("CANNOT UNMARSHAL")
+				fmt.Println(err.Error())
+				fmt.Println(string(resData[:]))
 			}
+			fmt.Print("User info: ", res.User, " with ", res.ReturnCode, " and ", res.ReturnMessage, "\n")
 		}
 	},
 }

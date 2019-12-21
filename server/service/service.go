@@ -1,7 +1,7 @@
 package service
 
 import (
-	payload "final-project/server/action_payload"
+	payload "final-project/action_payload"
 	"final-project/server/business"
 	"final-project/utils"
 	"fmt"
@@ -54,14 +54,15 @@ func HandleChangePassword(c *net.Conn, resBuf []byte) error {
 }
 
 func HandleChat(c *net.Conn, resBuf []byte) error {
-	// fmt.Println("CHATTTTT")
-	// var p payload.ChatPayload
-	// err := utils.UnmarshalObject(&p, resBuf[4:])
-	// if err != nil {
-	// 	checkError(err)
-	// }
-	// fmt.Printf("%s send msg to %s with content: %s\n", p.From, p.To, p.Message)
-	// conn.Write([]byte("ACKKKK"))
+	fmt.Println("CHATTTTT")
+	conn := *c
+	var p payload.ChatPayload
+	err := utils.UnmarshalObject(&p, resBuf[4:])
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s send msg to %s with content: %s\n", p.From, p.To, p.Message)
+	conn.Write([]byte("ACKKKK"))
 	return nil
 }
 
@@ -143,6 +144,48 @@ func HandleUserInfo(c *net.Conn, resBuf []byte) error {
 		return err
 	}
 	res := business.UserInfo(p.Username)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}
+
+func HandleSetupUserName(c *net.Conn, resBuf []byte) error {
+	fmt.Println("SETUP NAME")
+	conn := *c
+	var p payload.SetupUserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.SetupName(p.Username, p.NewInfo)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}
+
+func HandleSetupUserDate(c *net.Conn, resBuf []byte) error {
+	fmt.Println("SETUP DATE")
+	conn := *c
+	var p payload.SetupUserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.SetupDate(p.Username, p.NewInfo)
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+	return nil
+}
+
+func HandleSetupUserNote(c *net.Conn, resBuf []byte) error {
+	fmt.Println("SETUP NOTE")
+	conn := *c
+	var p payload.SetupUserPayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := business.SetupNote(p.Username, p.NewInfo)
 	resBytes := utils.MarshalObject(res)
 	conn.Write(resBytes)
 	return nil
