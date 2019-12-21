@@ -2,13 +2,15 @@ package service
 
 import (
 	payload "final-project/action_payload"
+	"final-project/message"
 	"final-project/server/business"
 	"final-project/utils"
 	"fmt"
+	"golang.org/x/sync/syncmap"
 	"net"
 )
 
-func HandleLogin(c *net.Conn, resBuf []byte) error {
+func HandleLogin(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 	conn := *c
 	fmt.Println("LOGINNN")
 	var p payload.RegisterLoginPayload
@@ -18,6 +20,9 @@ func HandleLogin(c *net.Conn, resBuf []byte) error {
 	}
 	fmt.Printf("User %s login with password: %s\n", p.Username, p.Password)
 	res := business.Signin(p.Username, p.Password)
+	if res.ReturnCode == 1 {
+		clientConns.Store(p.Username, *c)
+	}
 	resBytes := utils.MarshalObject(res)
 	conn.Write(resBytes)
 	return nil
@@ -53,15 +58,30 @@ func HandleChangePassword(c *net.Conn, resBuf []byte) error {
 	return nil
 }
 
-func HandleChat(c *net.Conn, resBuf []byte) error {
+func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 	fmt.Println("CHATTTTT")
 	conn := *c
 	var p payload.ChatPayload
-	err := utils.UnmarshalObject(&p, resBuf[4:])
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s send msg to %s with content: %s\n", p.From, p.To, p.Message)
+	fmt.Printf("Message sent from: %s\n", p.To)
+	fmt.Println(p.To)
+	fmt.Printf("Content: %s\n", p.Message)
+	// resSelf := message.ReturnMessage{ReturnCode: 1, ReturnMessage: "MESSAGE SENT"}
+	// resBytesSelf := utils.MarshalObject(resSelf)
+	// conn.Write(resBytesSelf)
+
+	for _, user := range p.To {
+		toConn, ok := clientConns.Load(user)
+		if ok {
+			co := toConn.(net.Conn)
+			res := message.ReturnMessageChat{From: p.From, To: user, Message: p.Message, ReturnCode: 1, ReturnMessage: ""}
+			resBytes := utils.MarshalObject(res)
+			co.Write(resBytes)
+		}
+	}
 	conn.Write([]byte("ACKKKK"))
 	return nil
 }

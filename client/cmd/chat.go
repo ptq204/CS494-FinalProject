@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"final-project/client/manager"
 	"final-project/constant"
+	"final-project/message"
+	"final-project/security"
+	"final-project/utils"
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
@@ -15,13 +18,21 @@ var chatCmd = &cobra.Command{
 	Short: "Chat with one or multiple users",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("CHECK CHAT")
-		clientService := manager.GetClientService()
-		currUserName := clientService.GetCurrUserName()
+		token, err := utils.ReadLocalValueInFile("token")
 
-		if currUserName == "" {
-			fmt.Println("You have to login before joining chat room")
+		if err != nil || token == "" {
+			fmt.Println("Please login before joining chat room")
+		}
+
+		payLoad, err := security.ParseToken(token)
+		if err != nil {
+			fmt.Println("Cannot authenticate. Please login again")
 			return
 		}
+
+		username := payLoad["username"].(string)
+		clientService := manager.GetClientService()
+		conn := clientService.GetConnection()
 
 		var msg string
 		encryptCheck, _ := cmd.Flags().GetString("encrypt")
@@ -36,13 +47,16 @@ var chatCmd = &cobra.Command{
 				msg = "ENCRYPT MESSAGE HERE"
 			}
 
-			clientService.SendDataChat(constant.Chat, currUserName, args[0], msg)
-			res, err := clientService.ReadData()
+			clientService.SendDataChat(constant.Chat, username, args[0], msg)
+			var res message.ReturnMessageChat
+			resData, _ := utils.ReadBytesResponse(&conn)
+			err := utils.UnmarshalObject(&res, resData[:])
+
 			if err != nil {
 				break
 			}
 
-			fmt.Println("Response: " + res)
+			fmt.Printf("%s : %s\n", res.From, res.Message)
 		}
 	},
 }

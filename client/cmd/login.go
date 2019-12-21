@@ -33,7 +33,7 @@ var loginCmd = &cobra.Command{
 		clientService.SendDataRegisterLogin(constant.Login, user, passStr)
 		conn := clientService.GetConnection()
 		// utils.TellReadDone(&conn)
-		var res message.ReturnMessage
+		var res message.ReturnMessageLogin
 		resData, _ := utils.ReadBytesResponse(&conn)
 		err := utils.UnmarshalObject(&res, resData[:])
 		if err != nil {
@@ -45,11 +45,18 @@ var loginCmd = &cobra.Command{
 			clientService.SetCurrUserName(user)
 		}
 		fmt.Printf("Return message: %d and %s\n", res.ReturnCode, res.ReturnMessage)
+		fmt.Printf("token: %s\n", res.Token)
+		if res.Token != "" {
+			err := utils.SaveLocalValueToFile("token", res.Token)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+		}
 	},
 }
 
 func getLoginEncryptPassword() string {
-	fmt.Print(">>Password: ")
+	fmt.Print(">> password: ")
 	pass, _ := gopass.GetPasswdMasked()
 	passStr := strings.TrimRight(string(pass), "\n")
 	return passStr
@@ -57,7 +64,7 @@ func getLoginEncryptPassword() string {
 
 func getLoginUnencryptPassword() string {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(">>password: ")
+	fmt.Print(">> password: ")
 	pass, _ := reader.ReadString('\n')
 	pass = strings.TrimRight(pass, "\n")
 	return pass

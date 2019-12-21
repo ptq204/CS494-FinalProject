@@ -51,6 +51,14 @@ type ReturnMessageLogin struct {
 	Token         string `json:"token`
 }
 
+type ReturnMessageChat struct {
+	ReturnCode    int32  `json:"return_code"`
+	From          string `json:"from"`
+	To            string `json:"to"`
+	Message       string `json:"message"`
+	ReturnMessage string `json:"return_message"`
+}
+
 type CheckUserResponse struct {
 	Information string `json:"info"`
 	ReturnMessage
