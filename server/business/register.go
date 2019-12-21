@@ -29,7 +29,7 @@ func Register(username string, password string) message.ReturnMessage {
 	} else {
 		bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 		user := entity.User{Username: username, Password: string(bytes), ID: uuid.NewV4(), IsActive: false}
-		err = db.Table("User").Create(&user).Error
+		err = db.Table("user").Create(&user).Error
 		if err != nil {
 			return message.ReturnMessage{
 				ReturnCode:    message.Unknown,

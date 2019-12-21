@@ -3,8 +3,8 @@ package cmd
 import (
 	"bufio"
 	"final-project/client/manager"
+	"final-project/constant"
 	"final-project/message"
-	"final-project/server/constant"
 	"final-project/utils"
 	"fmt"
 	"os"

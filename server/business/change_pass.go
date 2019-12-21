@@ -5,6 +5,7 @@ import (
 	"final-project/server/db/client"
 	"final-project/server/db/entity"
 	define "final-project/server/define"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
@@ -14,6 +15,9 @@ func ChangePassword(username string, oldPassword string, newPassword string) mes
 	var user entity.User
 	db := client.GetConnectionDB()
 	err := db.Table(define.UserTable).Where("username = ?", username).First(&user).Error
+
+	fmt.Println(user)
+
 	if gorm.IsRecordNotFoundError(err) {
 		return message.ReturnMessage{
 			ReturnCode:    message.UsernameNotFound,

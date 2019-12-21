@@ -3,8 +3,8 @@ package cmd
 import (
 	"bufio"
 	"final-project/client/manager"
+	"final-project/constant"
 	"final-project/message"
-	"final-project/server/constant"
 	"final-project/utils"
 	"fmt"
 	"os"
@@ -40,6 +40,9 @@ var loginCmd = &cobra.Command{
 			fmt.Println("CANNOT UNMARSHAL")
 			fmt.Println(err.Error())
 			fmt.Println(string(resData[:]))
+		}
+		if res.ReturnCode == 1 {
+			clientService.SetCurrUserName(user)
 		}
 		fmt.Printf("Return message: %d and %s\n", res.ReturnCode, res.ReturnMessage)
 	},
