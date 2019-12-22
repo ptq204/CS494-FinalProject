@@ -12,10 +12,16 @@ import (
 	"strings"
 )
 
-func ChangePassword(username string, passStr string, newPassStr string, clientService *manager.ClientSocket) {
+func ChangePassword(username string, passStr string, newPassStr string, encrypt int, clientService *manager.ClientSocket) {
 	fmt.Println("CHECK CHANGE PASSWORD")
 	// clientService := manager.GetClientService()
-	clientService.SendDataChangePassword(constant.Change_Password, username, passStr, newPassStr)
+	if encrypt == 1 {
+		// Put encrypt function here
+		passStr = "ENCRYPT PASSWORD"
+		newPassStr = "NEW ENCRYPT PASSWORD"
+	}
+
+	clientService.SendDataChangePassword(constant.Change_Password, username, passStr, newPassStr, encrypt)
 	conn := clientService.GetConnection()
 	var res message.ReturnMessage
 	resData, _ := utils.ReadBytesResponse(&conn)
@@ -28,12 +34,17 @@ func ChangePassword(username string, passStr string, newPassStr string, clientSe
 	fmt.Printf("Return message: %d and %s\n", res.ReturnCode, res.ReturnMessage)
 }
 
-func Login(username string, password string, clientService *manager.ClientSocket) {
+func Login(username string, password string, encrypt int, clientService *manager.ClientSocket) {
 	fmt.Println("CHECK LOGINNNN")
 	// clientService := manager.GetClientService()
 	fmt.Println(&clientService)
 
-	clientService.SendDataRegisterLogin(constant.Login, username, password)
+	if encrypt == 1 {
+		// Put encrypt function here
+		password = "ENCRYPT PASSWORD"
+	}
+
+	clientService.SendDataRegisterLogin(constant.Login, username, password, encrypt)
 	conn := clientService.GetConnection()
 	fmt.Println(conn)
 	// utils.TellReadDone(&conn)
@@ -97,9 +108,15 @@ func CheckUser(username string, flag string, clientService *manager.ClientSocket
 	}
 }
 
-func Register(username string, password string, clientService *manager.ClientSocket) {
+func Register(username string, password string, encrypt int, clientService *manager.ClientSocket) {
 	// clientService := manager.GetClientService()
-	clientService.SendDataRegisterLogin(constant.Register, username, password)
+
+	if encrypt == 1 {
+		// Put encrypt function  here
+		password = "ENCRYPT PASSWORD"
+	}
+
+	clientService.SendDataRegisterLogin(constant.Register, username, password, encrypt)
 	conn := clientService.GetConnection()
 
 	var res message.ReturnMessage
@@ -219,6 +236,67 @@ func Chat(clientService *manager.ClientSocket) {
 	}
 }
 
+func UploadFile(fileNames []string, alterFileName string, flag string, clientService *manager.ClientSocket) {
+
+	encrypt := 0
+	if flag == "encrypt" {
+		encrypt = 1
+	}
+
+	for _, fileName := range fileNames {
+		fi, err := os.Stat(fileName)
+		conn := clientService.GetConnection()
+		if err != nil {
+			fmt.Println("Cannot process choosen file")
+			return
+		}
+		clientService.SendFileMetada(constant.Upload, fi, alterFileName, encrypt)
+
+		var resUpFile message.ReturnMessageUpFile
+		resData, _ := utils.ReadBytesResponse(&conn)
+		err = utils.UnmarshalObject(&resUpFile, resData[:])
+		if err != nil {
+			fmt.Println("CANNOT UNMARSHAL")
+			fmt.Println(err.Error())
+			fmt.Println(string(resData[:]))
+		} else if resUpFile.ReturnCode == 1 && resUpFile.ReturnMessage == "OK" {
+			err = utils.SendFileData(&conn, fi.Name(), encrypt)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+		}
+	}
+}
+
+func DownloadFile(fileNames []string, flag string, clientService *manager.ClientSocket) {
+	encrypt := 0
+	if flag == "encrypt" {
+		encrypt = 1
+	}
+
+	for _, fileName := range fileNames {
+		conn := clientService.GetConnection()
+		clientService.SendDownFileMetada(constant.Download, fileName, encrypt)
+
+		var resDownFile message.ReturnMessageDownFile
+		resData, _ := utils.ReadBytesResponse(&conn)
+		err := utils.UnmarshalObject(&resDownFile, resData[:])
+		if err != nil {
+			fmt.Println("CANNOT UNMARSHAL")
+			fmt.Println(err.Error())
+			fmt.Println(string(resData[:]))
+		} else if resDownFile.ReturnCode == 1 && resDownFile.ReturnMessage == "OK" {
+			conn.Write([]byte("OK"))
+			err = utils.ReceiveFile(&conn, resDownFile.FileName, resDownFile.FileSize, encrypt)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+		} else {
+			conn.Write([]byte("CONTINUTE"))
+		}
+	}
+}
+
 func Exit(clientService *manager.ClientSocket) {
 	// clientService := manager.GetClientService()
 	clientService.Disconnect(constant.Exit)
@@ -231,6 +309,11 @@ func listenMessageChat(conn net.Conn) {
 		err := utils.UnmarshalObject(&res, resData[:])
 		if err != nil {
 			continue
+		}
+		// Check if message is encrypted
+		// if yes, decrypt it
+		if res.Encrypt == 1 {
+			res.Message = "DECRYPTED MESSAGE"
 		}
 		fmt.Printf("%s : %s\n", res.From, res.Message)
 	}

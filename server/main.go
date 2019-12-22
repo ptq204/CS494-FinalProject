@@ -86,6 +86,10 @@ func handleClient(conn net.Conn) {
 			service.HandleSetupUserDate(&conn, resBuf)
 		case constant.SetupNote:
 			service.HandleSetupUserNote(&conn, resBuf)
+		case constant.Upload:
+			service.HandleUploadFile(&conn, resBuf)
+		case constant.Download:
+			service.HandleDownloadFile(&conn, resBuf)
 		case constant.Exit:
 			check = true
 			clientConns.Delete(&conn)

@@ -33,14 +33,22 @@ func ParseCmdAndExecute(clientService *manager.ClientSocket, command string) boo
 				fmt.Println("(error) ERR wrong number of arguments for 'login' command")
 			} else {
 				password := utils.InputPassword()
-				Login(commands[1], password, clientService)
+				if n == 3 && commands[1][1:] == "encrypt" {
+					Login(commands[2], password, 1, clientService)
+				} else if n == 2 {
+					Login(commands[1], password, 0, clientService)
+				}
 			}
 		case "register":
 			if n != 2 && n != 3 {
 				fmt.Println("(error) ERR wrong number of arguments for 'register' command")
 			} else {
 				password := utils.InputPassword()
-				Register(commands[1], password, clientService)
+				if n == 3 && commands[1] == "-encrypt" {
+					Register(commands[2], password, 1, clientService)
+				} else if n == 2 {
+					Register(commands[1], password, 0, clientService)
+				}
 			}
 		case "change_password":
 			if n != 2 && n != 3 {
@@ -48,7 +56,11 @@ func ParseCmdAndExecute(clientService *manager.ClientSocket, command string) boo
 			} else {
 				password := utils.InputPassword()
 				newPassword := utils.InputNewPassword()
-				ChangePassword(commands[1], password, newPassword, clientService)
+				if n == 3 && commands[1] == "-encrypt" {
+					ChangePassword(commands[2], password, newPassword, 1, clientService)
+				} else if n == 2 {
+					ChangePassword(commands[1], password, newPassword, 0, clientService)
+				}
 			}
 		case "check_user":
 			if n != 3 {
@@ -64,6 +76,41 @@ func ParseCmdAndExecute(clientService *manager.ClientSocket, command string) boo
 			}
 		case "chat":
 			Chat(clientService)
+		case "upload":
+			files := []string{}
+			if n == 2 {
+				files = append(files, commands[1])
+				UploadFile(files, "", "", clientService)
+			} else if n == 3 && commands[1] == "-encrypt" {
+				files = append(files, commands[2])
+				UploadFile(files, "", "encrypt", clientService)
+			} else if n == 4 && commands[1] == "-change_name" {
+				files = append(files, commands[3])
+				UploadFile(files, commands[2], "", clientService)
+			} else if n >= 3 && commands[1] == "-multi_file" {
+				for i := 2; i < n; i++ {
+					files = append(files, commands[i])
+				}
+				UploadFile(files, "", "", clientService)
+			} else {
+				fmt.Println("(error) ERR wrong number of arguments for 'upload' command")
+			}
+		case "download":
+			files := []string{}
+			if n == 2 {
+				files = append(files, commands[1])
+				DownloadFile(files, "", clientService)
+			} else if n == 3 && commands[1] == "-encrypt" {
+				files = append(files, commands[2])
+				DownloadFile(files, "encrypt", clientService)
+			} else if n >= 3 && commands[1] == "-multi_file" {
+				for i := 2; i < n; i++ {
+					files = append(files, commands[i])
+				}
+				DownloadFile(files, "", clientService)
+			} else {
+				fmt.Println("(error) ERR wrong number of arguments for 'upload' command")
+			}
 		}
 	}
 	return true

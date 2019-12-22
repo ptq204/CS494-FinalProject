@@ -48,7 +48,19 @@ type ReturnMessage struct {
 type ReturnMessageLogin struct {
 	ReturnCode    int32  `json:"return_code"`
 	ReturnMessage string `json:"return_message"`
-	Token         string `json:"token`
+	Token         string `json:"token"`
+}
+
+type ReturnMessageUpFile struct {
+	ReturnCode    int32  `json:"return_code"`
+	ReturnMessage string `json:"ack_msg"`
+}
+
+type ReturnMessageDownFile struct {
+	ReturnCode    int32  `json:"return_code"`
+	ReturnMessage string `json:"ack_msg"`
+	FileName      string `json:"file_name"`
+	FileSize      int64  `json:"file_szie"`
 }
 
 type ReturnMessageChat struct {
@@ -56,6 +68,7 @@ type ReturnMessageChat struct {
 	From          string `json:"from"`
 	To            string `json:"to"`
 	Message       string `json:"message"`
+	Encrypt       int32  `json:"encrypt"`
 	ReturnMessage string `json:"return_message"`
 }
 
