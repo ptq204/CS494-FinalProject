@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/binary"
 	"encoding/csv"
 	"encoding/json"
@@ -166,6 +167,94 @@ func InputNewPassword() string {
 	pass, _ := gopass.GetPasswdMasked()
 	passStr := strings.TrimRight(string(pass), "\n")
 	return passStr
+}
+
+func SendFileData(c *net.Conn, fileName string, encrypt int) error {
+	conn := *c
+	f, err := os.Open(fileName)
+	if err != nil {
+		return err
+	}
+	buff := make([]byte, 1024)
+	for {
+		nBytes, err := f.Read(buff)
+		fmt.Println(nBytes)
+		if err != nil && err != io.EOF {
+			return err
+		}
+		if nBytes >= 0 {
+			if encrypt == 1 {
+				// PUT Encrypt function here
+				buff = []byte("Encrypted file chunk")
+				nBytes = len(buff)
+			}
+
+			buffSend := make([]byte, 4+nBytes)
+
+			buffBytesLength := new(bytes.Buffer)
+			numBytesBuff := make([]byte, 4)
+			binary.BigEndian.PutUint32(numBytesBuff, uint32(nBytes))
+			err := binary.Write(buffBytesLength, binary.BigEndian, numBytesBuff)
+			if err != nil {
+				return err
+			}
+
+			copy(buffSend[:4], buffBytesLength.Bytes())
+			copy(buffSend[4:], buff[:nBytes])
+
+			conn.Write(buffSend)
+		}
+		if nBytes == 0 {
+			f.Close()
+			break
+		}
+	}
+
+	return nil
+}
+
+func ReceiveFile(c *net.Conn, fileName string, fileSize int64, encrypt int) error {
+	fmt.Println("Start Receiving File")
+	conn := *c
+	var dataLength uint32
+	var nBytes int
+	prevNBytes := -1
+
+	f, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	for {
+		header := make([]byte, 4)
+		fileChunk := make([]byte, 1024)
+
+		_, err := conn.Read(header[0:])
+		if err != nil {
+			return err
+		}
+
+		dataLength = binary.BigEndian.Uint32(header)
+		if dataLength > 0 {
+			nBytes, err = conn.Read(fileChunk[0:dataLength])
+			if err != nil {
+				return err
+			}
+
+			if encrypt == 1 {
+				// Put Decrypt Function here
+				fileChunk = []byte("DECRYPTED FILE CHUNK")
+				nBytes = len(fileChunk)
+			}
+
+			f.Write(fileChunk[0:nBytes])
+		}
+		if dataLength == 0 || nBytes < prevNBytes {
+			f.Close()
+			break
+		}
+		prevNBytes = nBytes
+	}
+	return nil
 }
 
 func SplitCommand(s string) ([]string, error) {

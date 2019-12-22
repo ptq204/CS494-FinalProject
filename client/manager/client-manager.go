@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"os"
 )
 
 type ClientSocket struct {
@@ -56,7 +57,7 @@ func GetClientService() ClientSocket {
 	return clientService
 }
 
-func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, password string) error {
+func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, password string, encrypt int) error {
 	buffAction := new(bytes.Buffer)
 	action := make([]byte, 4)
 	binary.BigEndian.PutUint32(action, uint32(actionType))
@@ -64,7 +65,7 @@ func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, pa
 
 	checkError(err)
 
-	pl := payload.RegisterLoginPayload{Username: username, Password: password}
+	pl := payload.RegisterLoginPayload{Username: username, Password: password, Encrypt: int32(encrypt)}
 	buffPayload := utils.MarshalObject(&pl)
 
 	fmt.Printf("DATA LENGTHHHH: %d\n", len(buffPayload))
@@ -84,7 +85,7 @@ func (c *ClientSocket) SendDataRegisterLogin(actionType int, username string, pa
 	return err
 }
 
-func (c *ClientSocket) SendDataChangePassword(actionType int, username string, oldPassword string, newPassword string) error {
+func (c *ClientSocket) SendDataChangePassword(actionType int, username string, oldPassword string, newPassword string, encrypt int) error {
 	buffAction := new(bytes.Buffer)
 	action := make([]byte, 4)
 	binary.BigEndian.PutUint32(action, uint32(actionType))
@@ -92,7 +93,7 @@ func (c *ClientSocket) SendDataChangePassword(actionType int, username string, o
 
 	checkError(err)
 
-	pl := payload.ChangePasswordPayload{Username: username, OldPassword: oldPassword, NewPassword: newPassword}
+	pl := payload.ChangePasswordPayload{Username: username, OldPassword: oldPassword, NewPassword: newPassword, Encrypt: int32(encrypt)}
 	buffPayload := utils.MarshalObject(&pl)
 
 	buffDataLength := new(bytes.Buffer)
@@ -118,7 +119,7 @@ func (c *ClientSocket) SendDataChat(actionType int, from string, to []string, me
 
 	checkError(err)
 
-	pl := payload.ChatPayload{From: from, To: to, Message: message, MultiUser: multiUser, Encrypt: encrypt}
+	pl := payload.ChatPayload{From: from, To: to, Message: message, MultiUser: int32(multiUser), Encrypt: int32(encrypt)}
 	buffPayload := utils.MarshalObject(&pl)
 
 	buffDataLength := new(bytes.Buffer)
@@ -171,6 +172,58 @@ func (c *ClientSocket) SetupInfo(actionType int, username string, newInfo string
 	checkError(err)
 
 	pl := payload.SetupUserPayload{Username: username, NewInfo: newInfo}
+	buffPayload := utils.MarshalObject(&pl)
+
+	buffDataLength := new(bytes.Buffer)
+	dataLength := make([]byte, 4)
+	binary.BigEndian.PutUint32(dataLength, uint32(len(buffPayload)))
+	err = binary.Write(buffDataLength, binary.BigEndian, dataLength)
+
+	dataSend := make([]byte, len(buffPayload)+8)
+	copy(dataSend[:4], buffDataLength.Bytes())
+	copy(dataSend[4:8], buffAction.Bytes())
+	copy(dataSend[8:], buffPayload)
+
+	_, err = c.conn.Write([]byte(dataSend))
+
+	return err
+}
+
+func (c *ClientSocket) SendFileMetada(actionType int, fileInfo os.FileInfo, alterFileName string, encrypt int) error {
+	buffAction := new(bytes.Buffer)
+	action := make([]byte, 4)
+	binary.BigEndian.PutUint32(action, uint32(actionType))
+	err := binary.Write(buffAction, binary.BigEndian, action)
+
+	checkError(err)
+
+	pl := payload.UploadFilePayload{FileName: fileInfo.Name(), FileSize: fileInfo.Size(), AlterFileName: alterFileName, Encrypt: int32(encrypt)}
+	buffPayload := utils.MarshalObject(&pl)
+
+	buffDataLength := new(bytes.Buffer)
+	dataLength := make([]byte, 4)
+	binary.BigEndian.PutUint32(dataLength, uint32(len(buffPayload)))
+	err = binary.Write(buffDataLength, binary.BigEndian, dataLength)
+
+	dataSend := make([]byte, len(buffPayload)+8)
+	copy(dataSend[:4], buffDataLength.Bytes())
+	copy(dataSend[4:8], buffAction.Bytes())
+	copy(dataSend[8:], buffPayload)
+
+	_, err = c.conn.Write([]byte(dataSend))
+
+	return err
+}
+
+func (c *ClientSocket) SendDownFileMetada(actionType int, fileName string, encrypt int) error {
+	buffAction := new(bytes.Buffer)
+	action := make([]byte, 4)
+	binary.BigEndian.PutUint32(action, uint32(actionType))
+	err := binary.Write(buffAction, binary.BigEndian, action)
+
+	checkError(err)
+
+	pl := payload.DownloadFilePayload{FileName: fileName, Encrypt: int32(encrypt)}
 	buffPayload := utils.MarshalObject(&pl)
 
 	buffDataLength := new(bytes.Buffer)

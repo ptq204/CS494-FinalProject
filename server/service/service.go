@@ -6,8 +6,10 @@ import (
 	"final-project/server/business"
 	"final-project/utils"
 	"fmt"
-	"golang.org/x/sync/syncmap"
 	"net"
+	"os"
+
+	"golang.org/x/sync/syncmap"
 )
 
 func HandleLogin(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
@@ -77,7 +79,7 @@ func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 		toConn, ok := clientConns.Load(user)
 		if ok {
 			co := toConn.(net.Conn)
-			res := message.ReturnMessageChat{From: p.From, To: user, Message: p.Message, ReturnCode: 1, ReturnMessage: ""}
+			res := message.ReturnMessageChat{From: p.From, To: user, Message: p.Message, Encrypt: p.Encrypt, ReturnCode: 1, ReturnMessage: ""}
 			resBytes := utils.MarshalObject(res)
 			co.Write(resBytes)
 		}
@@ -99,6 +101,7 @@ func HandleFindUser(c *net.Conn, resBuf []byte) error {
 	conn.Write(resBytes)
 	return nil
 }
+
 func HandleOnlineUser(c *net.Conn, resBuf []byte) error {
 	fmt.Println("ONLINE USER")
 	conn := *c
@@ -209,4 +212,75 @@ func HandleSetupUserNote(c *net.Conn, resBuf []byte) error {
 	resBytes := utils.MarshalObject(res)
 	conn.Write(resBytes)
 	return nil
+}
+
+func HandleUploadFile(c *net.Conn, resBuf []byte) error {
+	conn := *c
+	fmt.Println("UPLOAD FILE")
+	var p payload.UploadFilePayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+	res := message.ReturnMessageUpFile{ReturnCode: 1, ReturnMessage: "OK"}
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+
+	fileName := p.FileName
+	if p.AlterFileName != "" {
+		fileName = p.AlterFileName
+	}
+
+	err = utils.ReceiveFile(c, fileName, p.FileSize, int(p.Encrypt))
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println("ENDDDDD UPLOAD")
+	return err
+}
+
+func HandleDownloadFile(c *net.Conn, resBuf []byte) error {
+	conn := *c
+	fmt.Println("DOWNLOAD FILE")
+	var p payload.DownloadFilePayload
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	if err != nil {
+		return err
+	}
+
+	checkDownFile := false
+	var res message.ReturnMessageDownFile
+	if _, err = os.Stat(p.FileName); os.IsNotExist(err) {
+		res = message.ReturnMessageDownFile{
+			ReturnCode:    2,
+			ReturnMessage: "Requested file does not exist",
+			FileName:      "",
+			FileSize:      0,
+		}
+	} else {
+		fi, _ := os.Stat(p.FileName)
+		res = message.ReturnMessageDownFile{
+			ReturnCode:    1,
+			ReturnMessage: "OK",
+			FileName:      fi.Name(),
+			FileSize:      fi.Size(),
+		}
+		checkDownFile = true
+	}
+	resBytes := utils.MarshalObject(res)
+	conn.Write(resBytes)
+
+	if checkDownFile {
+		buff := make([]byte, 100)
+		nBytes, err := conn.Read(buff)
+		if string(buff[:nBytes]) == "OK" {
+			err = utils.SendFileData(c, p.FileName, int(p.Encrypt))
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+		}
+	}
+
+	fmt.Println("ENDDDDD UPLOAD")
+	return err
 }
