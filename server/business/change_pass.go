@@ -1,6 +1,8 @@
 package business
 
 import (
+	"final-project/constant"
+	"final-project/decrypt"
 	message "final-project/message"
 	"final-project/server/db/client"
 	"final-project/server/db/entity"
@@ -11,7 +13,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func ChangePassword(username string, oldPassword string, newPassword string) message.ReturnMessage {
+func ChangePassword(username string, oldPassword string, newPassword string, encrypt int32) message.ReturnMessage {
+	if encrypt == 1 {
+		username = decrypt.Decrypt(constant.PASSPHRASE, username)
+		oldPassword = decrypt.Decrypt(constant.PASSPHRASE, oldPassword)
+		newPassword = decrypt.Decrypt(constant.PASSPHRASE, newPassword)
+	}
 	var user entity.User
 	db := client.GetConnectionDB()
 	err := db.Table(define.UserTable).Where("username = ?", username).First(&user).Error

@@ -6,9 +6,6 @@ import (
 	"encoding/binary"
 	"encoding/csv"
 	"encoding/json"
-	"final-project/constant"
-	"final-project/decrypt"
-	e "final-project/encrypt"
 	_ "final-project/message"
 	"fmt"
 	"io"
@@ -20,7 +17,10 @@ import (
 )
 
 func MarshalObject(obj interface{}) []byte {
-	result, _ := json.Marshal(obj)
+	result, err := json.Marshal(obj)
+	if err != nil {
+		fmt.Printf("Marshal error: %s", err.Error())
+	}
 	return result
 }
 
@@ -89,8 +89,11 @@ func ReadBytesData(c *net.Conn) ([]byte, uint32, error) {
 		fmt.Printf("DATA LENGTH: %d bytes\n", dataLength)
 	}
 
-	fmt.Println(string(resBuf[:]))
-
+	fmt.Println(resBuf[:])
+	for _, b := range resBuf {
+		fmt.Println(b)
+		fmt.Println(string(b))
+	}
 	fmt.Println("PASSSSS")
 	return resBuf, actionType, nil
 }
@@ -188,11 +191,6 @@ func SendFileData(c *net.Conn, fileName string, encrypt int) error {
 		if nBytes >= 0 {
 			if encrypt == 1 {
 				// PUT Encrypt function here
-				buff, err = e.File(fileName, buff, constant.PASSPHRASE)
-				if err != nil {
-					panic(err.Error())
-				}
-				nBytes = len(buff)
 			}
 
 			buffSend := make([]byte, 4+nBytes)
@@ -249,11 +247,6 @@ func ReceiveFile(c *net.Conn, fileName string, fileSize int64, encrypt int) erro
 			if encrypt == 1 {
 				// Put Decrypt Function here
 				fileChunk = []byte("DECRYPTED FILE CHUNK")
-				fileChunk, err = decrypt.File(fileName, constant.PASSPHRASE)
-				if err != nil {
-					panic(err.Error())
-				}
-				nBytes = len(fileChunk)
 			}
 
 			f.Write(fileChunk[0:nBytes])

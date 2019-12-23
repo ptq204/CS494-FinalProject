@@ -21,7 +21,7 @@ func HandleLogin(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 		return err
 	}
 	fmt.Printf("User %s login with password: %s\n", p.Username, p.Password)
-	res := business.Signin(p.Username, p.Password)
+	res := business.Signin(p.Username, p.Password, p.Encrypt)
 	if res.ReturnCode == 1 {
 		clientConns.Store(p.Username, *c)
 	}
@@ -36,10 +36,11 @@ func HandleRegister(c *net.Conn, resBuf []byte) error {
 	var p payload.RegisterLoginPayload
 	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
 	if err != nil {
+		fmt.Printf("Error unmarshal: %s", err.Error())
 		return err
 	}
 	fmt.Printf("User create new account with username: %s and password: %s\n", p.Username, p.Password)
-	res := business.Register(p.Username, p.Password)
+	res := business.Register(p.Username, p.Password, p.Encrypt)
 	resBytes := utils.MarshalObject(res)
 	conn.Write(resBytes)
 	return nil
@@ -54,7 +55,7 @@ func HandleChangePassword(c *net.Conn, resBuf []byte) error {
 		return err
 	}
 	fmt.Printf("User %s change password from %s to %s\n", p.Username, p.OldPassword, p.NewPassword)
-	res := business.ChangePassword(p.Username, p.OldPassword, p.NewPassword)
+	res := business.ChangePassword(p.Username, p.OldPassword, p.NewPassword, p.Encrypt)
 	resBytes := utils.MarshalObject(res)
 	conn.Write(resBytes)
 	return nil
@@ -64,17 +65,14 @@ func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 	fmt.Println("CHATTTTT")
 	conn := *c
 	var p payload.ChatPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)])
 	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
 		return err
 	}
 	fmt.Printf("Message sent from: %s\n", p.To)
 	fmt.Println(p.To)
 	fmt.Printf("Content: %s\n", p.Message)
-	// resSelf := message.ReturnMessage{ReturnCode: 1, ReturnMessage: "MESSAGE SENT"}
-	// resBytesSelf := utils.MarshalObject(resSelf)
-	// conn.Write(resBytesSelf)
-
 	for _, user := range p.To {
 		toConn, ok := clientConns.Load(user)
 		if ok {

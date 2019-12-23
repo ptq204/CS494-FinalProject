@@ -3,41 +3,36 @@ package decrypt
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/sha1"
-	"final-project/constant"
-	"io/ioutil"
-
-	"golang.org/x/crypto/pbkdf2"
+	"crypto/md5"
+	"encoding/base64"
+	"encoding/hex"
+	"fmt"
 )
 
-func Data(data []byte, passphrase string) ([]byte, error) {
-	key := CreateHash(passphrase)
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return []byte{}, err
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return []byte{}, err
-	}
-	nonceSize := gcm.NonceSize()
-	nonce, cipherText := data[:nonceSize], data[nonceSize:]
-	plainText, err := gcm.Open(nil, nonce, cipherText, nil)
-	if err != nil {
-		return []byte{}, err
-	}
-	return plainText, nil
-}
+var iv = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
 
-func File(filename string, passphrase string) ([]byte, error) {
-	data, _ := ioutil.ReadFile(filename)
-	plainText, err := Data(data, passphrase)
-	if err != nil {
-		return []byte{}, err
-	}
-	return plainText, nil
+func createHash(key string) []byte {
+	hash := md5.Sum([]byte(key))
+	dst := make([]byte, hex.EncodedLen(len(hash)))
+	hex.Encode(dst, hash[:])
+	return dst
 }
-func CreateHash(key string) []byte {
-	salt := make([]byte, constant.PW_SALT_BYTES)
-	return pbkdf2.Key([]byte(key), salt, 4096, 32, sha1.New)
+func decodeBase64(s string) []byte {
+	data, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+func Decrypt(key, text string) string {
+	fmt.Println(text)
+	block, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		panic(err)
+	}
+	ciphertext := decodeBase64(text)
+	cfb := cipher.NewCFBEncrypter(block, iv)
+	plaintext := make([]byte, len(ciphertext))
+	cfb.XORKeyStream(plaintext, ciphertext)
+	return string(plaintext)
 }

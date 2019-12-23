@@ -1,6 +1,8 @@
 package message
 
-import "final-project/server/db/entity"
+import (
+	"final-project/server/db/entity"
+)
 
 const (
 	Success = 1

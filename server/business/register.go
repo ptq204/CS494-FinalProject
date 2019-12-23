@@ -1,6 +1,8 @@
 package business
 
 import (
+	"final-project/constant"
+	"final-project/decrypt"
 	"final-project/message"
 	"final-project/server/db/client"
 	"final-project/server/db/entity"
@@ -11,7 +13,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Register(username string, password string) message.ReturnMessage {
+func Register(username string, password string, encrypt int32) message.ReturnMessage {
+	if encrypt == 1 {
+		username = decrypt.Decrypt(constant.PASSPHRASE, username)
+		password = decrypt.Decrypt(constant.PASSPHRASE, password)
+	}
 	db := client.GetConnectionDB()
 	var user entity.User
 	err := db.Table(define.UserTable).Where("username=?", username).First(&user).Error

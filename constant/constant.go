@@ -29,7 +29,7 @@ const (
 	PW_SALT_BYTES = 32
 )
 
-const PASSPHRASE = "PASSWORD"
+const PASSPHRASE = "123456789012345678901234"
 
 type ActionPayload interface {
 }

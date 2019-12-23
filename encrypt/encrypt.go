@@ -3,40 +3,25 @@ package encrypt
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
-	"crypto/sha1"
-	"final-project/constant"
-	"io"
-	"os"
-
-	"golang.org/x/crypto/pbkdf2"
+	"encoding/base64"
+	"fmt"
 )
 
-func Data(data []byte, passphrase string) ([]byte, error) {
-	block, _ := aes.NewCipher(CreateHash(passphrase))
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return []byte{}, err
-	}
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return []byte{}, err
-	}
-	cipherText := gcm.Seal(nonce, nonce, data, nil)
-	return cipherText, nil
+var iv = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
+
+func encodeBase64(b []byte) string {
+	return base64.StdEncoding.EncodeToString(b)
 }
 
-func File(filename string, data []byte, passphrase string) ([]byte, error) {
-	f, _ := os.Create(filename)
-	defer f.Close()
-	cipherText, err := Data(data, passphrase)
+func Encrypt(key, text string) string {
+	fmt.Println(text)
+	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		return []byte{}, err
+		panic(err)
 	}
-	f.Write(cipherText)
-	return cipherText, nil
-}
-func CreateHash(key string) []byte {
-	salt := make([]byte, constant.PW_SALT_BYTES)
-	return pbkdf2.Key([]byte(key), salt, 4096, 32, sha1.New)
+	plaintext := []byte(text)
+	cfb := cipher.NewCFBEncrypter(block, iv)
+	ciphertext := make([]byte, len(plaintext))
+	cfb.XORKeyStream(ciphertext, plaintext)
+	return encodeBase64(ciphertext)
 }

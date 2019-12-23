@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"final-project/client/manager"
 	"final-project/constant"
+	"final-project/decrypt"
 	e "final-project/encrypt"
 	"final-project/message"
 	"final-project/utils"
@@ -18,16 +19,9 @@ func ChangePassword(username string, passStr string, newPassStr string, encrypt 
 	// clientService := manager.GetClientService()
 	if encrypt == 1 {
 		// Put encrypt function here
-		encryptedPass, err := e.Data([]byte(passStr), constant.PASSPHRASE)
-		if err != nil {
-			panic(err.Error())
-		}
-		passStr = string(encryptedPass)
-		encryptedNewPass, err := e.Data([]byte(passStr), constant.PASSPHRASE)
-		if err != nil {
-			panic(err.Error())
-		}
-		newPassStr = string(encryptedNewPass)
+		username = e.Encrypt(constant.PASSPHRASE, username)
+		passStr = e.Encrypt(constant.PASSPHRASE, passStr)
+		newPassStr = e.Encrypt(constant.PASSPHRASE, newPassStr)
 	}
 
 	clientService.SendDataChangePassword(constant.Change_Password, username, passStr, newPassStr, encrypt)
@@ -49,14 +43,9 @@ func Login(username string, password string, encrypt int, clientService *manager
 	fmt.Println(&clientService)
 
 	if encrypt == 1 {
-		// Put encrypt function here
-		encryptedPass, err := e.Data([]byte(password), constant.PASSPHRASE)
-		if err != nil {
-			panic(err.Error())
-		}
-		password = string(encryptedPass)
+		username = e.Encrypt(constant.PASSPHRASE, username)
+		password = e.Encrypt(constant.PASSPHRASE, password)
 	}
-
 	clientService.SendDataRegisterLogin(constant.Login, username, password, encrypt)
 	conn := clientService.GetConnection()
 	fmt.Println(conn)
@@ -125,17 +114,11 @@ func Register(username string, password string, encrypt int, clientService *mana
 	// clientService := manager.GetClientService()
 
 	if encrypt == 1 {
-		// Put encrypt function  here
-		encryptedPass, err := e.Data([]byte(password), constant.PASSPHRASE)
-		if err != nil {
-			panic(err.Error())
-		}
-		password = string(encryptedPass)
+		username = e.Encrypt(constant.PASSPHRASE, username)
+		password = e.Encrypt(constant.PASSPHRASE, password)
 	}
-
-	clientService.SendDataRegisterLogin(constant.Register, username, password, encrypt)
 	conn := clientService.GetConnection()
-
+	clientService.SendDataRegisterLogin(constant.Register, username, password, encrypt)
 	var res message.ReturnMessage
 	resData, _ := utils.ReadBytesResponse(&conn)
 	err := utils.UnmarshalObject(&res, resData[:])
@@ -235,25 +218,11 @@ func Chat(clientService *manager.ClientSocket) {
 				msg = strings.TrimRight(msg, "\n")
 				if encrypt == 1 {
 					// Put encrypt function here
-					encryptedMsg, err := e.Data([]byte(msg), constant.PASSPHRASE)
-					if err != nil {
-						panic(err.Error())
-					}
-					msg = string(encryptedMsg)
+					msg = e.Encrypt(constant.PASSPHRASE, msg)
 				}
 				clientService.SendDataChat(constant.Chat, currUserName, users, msg, multiUser, encrypt)
 			}
 		}
-
-		// var res message.ReturnMessageChat
-		// resData, _ := utils.ReadBytesResponse(&conn)
-		// err := utils.UnmarshalObject(&res, resData[:])
-
-		// if err != nil {
-		// 	fmt.Println(err.Error())
-		// }
-
-		// fmt.Printf("%s : %s\n", res.From, res.Message)
 	}
 }
 
@@ -334,8 +303,11 @@ func listenMessageChat(conn net.Conn) {
 		// Check if message is encrypted
 		// if yes, decrypt it
 		if res.Encrypt == 1 {
-			res.Message = "DECRYPTED MESSAGE"
+			message := decrypt.Decrypt(constant.PASSPHRASE, res.Message)
+			fmt.Printf("%s : %s\n", res.From, string(message))
+		} else {
+			fmt.Printf("%s : %s\n", res.From, string(res.Message))
 		}
-		fmt.Printf("%s : %s\n", res.From, res.Message)
+
 	}
 }

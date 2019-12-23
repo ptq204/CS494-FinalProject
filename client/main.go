@@ -6,6 +6,7 @@ import (
 	"final-project/client/service"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -37,6 +38,8 @@ func main() {
 	for {
 		fmt.Print("SocketApp~>: ")
 		cmd, _ := reader.ReadString('\n')
+		cmd = strings.TrimRight(cmd, "\n")
+		fmt.Printf("Command: %s", cmd)
 		if !service.ParseCmdAndExecute(&clientService, cmd) {
 			break
 		}
