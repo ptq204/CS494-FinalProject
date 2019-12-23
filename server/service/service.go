@@ -65,7 +65,7 @@ func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 	fmt.Println("CHATTTTT")
 	conn := *c
 	var p payload.ChatPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)])
+	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
 		return err
