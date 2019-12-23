@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"final-project/client/manager"
 	"final-project/constant"
+	e "final-project/encrypt"
 	"final-project/message"
 	"final-project/utils"
 	"fmt"
@@ -17,8 +18,16 @@ func ChangePassword(username string, passStr string, newPassStr string, encrypt 
 	// clientService := manager.GetClientService()
 	if encrypt == 1 {
 		// Put encrypt function here
-		passStr = "ENCRYPT PASSWORD"
-		newPassStr = "NEW ENCRYPT PASSWORD"
+		encryptedPass, err := e.Data([]byte(passStr), constant.PASSPHRASE)
+		if err != nil {
+			panic(err.Error())
+		}
+		passStr = string(encryptedPass)
+		encryptedNewPass, err := e.Data([]byte(passStr), constant.PASSPHRASE)
+		if err != nil {
+			panic(err.Error())
+		}
+		newPassStr = string(encryptedNewPass)
 	}
 
 	clientService.SendDataChangePassword(constant.Change_Password, username, passStr, newPassStr, encrypt)
@@ -41,7 +50,11 @@ func Login(username string, password string, encrypt int, clientService *manager
 
 	if encrypt == 1 {
 		// Put encrypt function here
-		password = "ENCRYPT PASSWORD"
+		encryptedPass, err := e.Data([]byte(password), constant.PASSPHRASE)
+		if err != nil {
+			panic(err.Error())
+		}
+		password = string(encryptedPass)
 	}
 
 	clientService.SendDataRegisterLogin(constant.Login, username, password, encrypt)
@@ -113,7 +126,11 @@ func Register(username string, password string, encrypt int, clientService *mana
 
 	if encrypt == 1 {
 		// Put encrypt function  here
-		password = "ENCRYPT PASSWORD"
+		encryptedPass, err := e.Data([]byte(password), constant.PASSPHRASE)
+		if err != nil {
+			panic(err.Error())
+		}
+		password = string(encryptedPass)
 	}
 
 	clientService.SendDataRegisterLogin(constant.Register, username, password, encrypt)
@@ -218,7 +235,11 @@ func Chat(clientService *manager.ClientSocket) {
 				msg = strings.TrimRight(msg, "\n")
 				if encrypt == 1 {
 					// Put encrypt function here
-					msg = "ENCRYPT MESSAGE HERE"
+					encryptedMsg, err := e.Data([]byte(msg), constant.PASSPHRASE)
+					if err != nil {
+						panic(err.Error())
+					}
+					msg = string(encryptedMsg)
 				}
 				clientService.SendDataChat(constant.Chat, currUserName, users, msg, multiUser, encrypt)
 			}

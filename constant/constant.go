@@ -25,5 +25,11 @@ type ActionDefine struct {
 	code int
 }
 
+const (
+	PW_SALT_BYTES = 32
+)
+
+const PASSPHRASE = "PASSWORD"
+
 type ActionPayload interface {
 }

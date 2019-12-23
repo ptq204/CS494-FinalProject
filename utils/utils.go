@@ -6,6 +6,9 @@ import (
 	"encoding/binary"
 	"encoding/csv"
 	"encoding/json"
+	"final-project/constant"
+	"final-project/decrypt"
+	e "final-project/encrypt"
 	_ "final-project/message"
 	"fmt"
 	"io"
@@ -185,7 +188,10 @@ func SendFileData(c *net.Conn, fileName string, encrypt int) error {
 		if nBytes >= 0 {
 			if encrypt == 1 {
 				// PUT Encrypt function here
-				buff = []byte("Encrypted file chunk")
+				buff, err = e.File(fileName, buff, constant.PASSPHRASE)
+				if err != nil {
+					panic(err.Error())
+				}
 				nBytes = len(buff)
 			}
 
@@ -243,6 +249,10 @@ func ReceiveFile(c *net.Conn, fileName string, fileSize int64, encrypt int) erro
 			if encrypt == 1 {
 				// Put Decrypt Function here
 				fileChunk = []byte("DECRYPTED FILE CHUNK")
+				fileChunk, err = decrypt.File(fileName, constant.PASSPHRASE)
+				if err != nil {
+					panic(err.Error())
+				}
 				nBytes = len(fileChunk)
 			}
 

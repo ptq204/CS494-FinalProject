@@ -4,13 +4,15 @@ import (
 	"bufio"
 	"final-project/client/manager"
 	"final-project/constant"
+	"final-project/encrypt"
 	"final-project/message"
 	"final-project/security"
 	"final-project/utils"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	_ "strings"
+
+	"github.com/spf13/cobra"
 )
 
 var chatCmd = &cobra.Command{
@@ -44,7 +46,11 @@ var chatCmd = &cobra.Command{
 
 			if encryptCheck != "" {
 				// Put encrypt function here
-				msg = "ENCRYPT MESSAGE HERE"
+				encryptedMsg, err := encrypt.Data([]byte(msg), constant.PASSPHRASE)
+				if err != nil {
+					panic(err.Error())
+				}
+				msg = string(encryptedMsg)
 			}
 
 			clientService.SendDataChat(constant.Chat, username, args[0], msg)
