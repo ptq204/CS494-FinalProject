@@ -82,7 +82,6 @@ func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 			co.Write(resBytes)
 		}
 	}
-	conn.Write([]byte("ACKKKK"))
 	return nil
 }
 
