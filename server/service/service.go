@@ -63,14 +63,13 @@ func HandleChangePassword(c *net.Conn, resBuf []byte) error {
 
 func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 	fmt.Println("CHATTTTT")
-	conn := *c
 	var p payload.ChatPayload
 	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
 		return err
 	}
-	fmt.Printf("Message sent from: %s\n", p.To)
+	fmt.Printf("Message is being sent to: %s\n", p.To)
 	fmt.Println(p.To)
 	fmt.Printf("Content: %s\n", p.Message)
 	for _, user := range p.To {
@@ -82,7 +81,6 @@ func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 			co.Write(resBytes)
 		}
 	}
-	conn.Write([]byte("ACKKKK"))
 	return nil
 }
 

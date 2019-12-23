@@ -178,21 +178,21 @@ func Chat(clientService *manager.ClientSocket) {
 
 		if n >= 2 {
 			if n >= 3 {
-				if (commands[1][1:] == "encrypt" && commands[2][1:] == "multi_user") || (commands[1][1:] == "multi_user" && commands[2][1:] == "encode") {
+				if (commands[1] == "-encrypt" && commands[2] == "-multi_user") || (commands[1] == "-multi_user" && commands[2] == "-encrypt") {
 					for i := 3; i < n; i++ {
 						users = append(users, commands[i])
 					}
 					multiUser = 1
 					encrypt = 1
 					check = true
-				} else if commands[1] == "encrypt" {
+				} else if commands[1] == "-encrypt" {
 					for i := 2; i < n; i++ {
 						users = append(users, commands[i])
 					}
 					multiUser = 0
 					encrypt = 1
 					check = true
-				} else if commands[1] == "multi_user" {
+				} else if commands[1] == "-multi_user" {
 					for i := 2; i < n; i++ {
 						users = append(users, commands[i])
 					}
