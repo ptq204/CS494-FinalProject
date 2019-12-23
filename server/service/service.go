@@ -16,7 +16,7 @@ func HandleLogin(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 	conn := *c
 	fmt.Println("LOGINNN")
 	var p payload.RegisterLoginPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func HandleRegister(c *net.Conn, resBuf []byte) error {
 	fmt.Println("REGISTERR")
 	conn := *c
 	var p payload.RegisterLoginPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		fmt.Printf("Error unmarshal: %s", err.Error())
 		return err
@@ -50,7 +50,7 @@ func HandleChangePassword(c *net.Conn, resBuf []byte) error {
 	fmt.Println("CHANGE_PASSWORD")
 	conn := *c
 	var p payload.ChangePasswordPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -63,13 +63,14 @@ func HandleChangePassword(c *net.Conn, resBuf []byte) error {
 
 func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 	fmt.Println("CHATTTTT")
+	conn := *c
 	var p payload.ChatPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
-		fmt.Printf("Error: %s", err.Error())
+		fmt.Printf("Error unmarshal: %s", err.Error())
 		return err
 	}
-	fmt.Printf("Message is being sent to: %s\n", p.To)
+	fmt.Printf("Message sent from: %s\n", p.To)
 	fmt.Println(p.To)
 	fmt.Printf("Content: %s\n", p.Message)
 	for _, user := range p.To {
@@ -81,6 +82,7 @@ func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 			co.Write(resBytes)
 		}
 	}
+	conn.Write([]byte("ACKKKK"))
 	return nil
 }
 
@@ -88,7 +90,7 @@ func HandleFindUser(c *net.Conn, resBuf []byte) error {
 	fmt.Println("FIND USER")
 	conn := *c
 	var p payload.UserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -102,7 +104,7 @@ func HandleOnlineUser(c *net.Conn, resBuf []byte) error {
 	fmt.Println("ONLINE USER")
 	conn := *c
 	var p payload.UserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -116,7 +118,7 @@ func HandleUserBirthday(c *net.Conn, resBuf []byte) error {
 	fmt.Println("USER BIRTHDAY")
 	conn := *c
 	var p payload.UserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -130,7 +132,7 @@ func HandleUserName(c *net.Conn, resBuf []byte) error {
 	fmt.Println("USER NAME")
 	conn := *c
 	var p payload.UserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -144,7 +146,7 @@ func HandleUserNote(c *net.Conn, resBuf []byte) error {
 	fmt.Println("USER NOTE")
 	conn := *c
 	var p payload.UserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -158,7 +160,7 @@ func HandleUserInfo(c *net.Conn, resBuf []byte) error {
 	fmt.Println("USER INFO")
 	conn := *c
 	var p payload.UserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -172,7 +174,7 @@ func HandleSetupUserName(c *net.Conn, resBuf []byte) error {
 	fmt.Println("SETUP NAME")
 	conn := *c
 	var p payload.SetupUserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -186,7 +188,7 @@ func HandleSetupUserDate(c *net.Conn, resBuf []byte) error {
 	fmt.Println("SETUP DATE")
 	conn := *c
 	var p payload.SetupUserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -200,7 +202,7 @@ func HandleSetupUserNote(c *net.Conn, resBuf []byte) error {
 	fmt.Println("SETUP NOTE")
 	conn := *c
 	var p payload.SetupUserPayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -214,7 +216,7 @@ func HandleUploadFile(c *net.Conn, resBuf []byte) error {
 	conn := *c
 	fmt.Println("UPLOAD FILE")
 	var p payload.UploadFilePayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}
@@ -239,7 +241,7 @@ func HandleDownloadFile(c *net.Conn, resBuf []byte) error {
 	conn := *c
 	fmt.Println("DOWNLOAD FILE")
 	var p payload.DownloadFilePayload
-	err := utils.UnmarshalObject(&p, resBuf[:len(resBuf)-1])
+	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
 		return err
 	}

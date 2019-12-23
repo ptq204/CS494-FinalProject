@@ -44,8 +44,8 @@ func ReadBytesData(c *net.Conn) ([]byte, uint32, error) {
 	metadata := make([]byte, 4)
 	b := make([]byte, 100)
 
-	_, err := conn.Read(metadata[0:]) // read data length
-
+	bytes, err := conn.Read(metadata[:]) // read data length
+	fmt.Printf("Data length: %d\n", bytes)
 	if err != nil {
 		return nil, 20, err
 	}
@@ -54,7 +54,9 @@ func ReadBytesData(c *net.Conn) ([]byte, uint32, error) {
 
 	fmt.Printf("DATA LENGTH FIRST: %d bytes\n", dataLength)
 
-	_, err = conn.Read(metadata[0:]) // read actiontype
+	bytes, err = conn.Read(metadata[:]) // read actiontype
+
+	fmt.Printf("Action length: %d\n", bytes)
 
 	actionType := binary.BigEndian.Uint32(metadata)
 
@@ -63,39 +65,21 @@ func ReadBytesData(c *net.Conn) ([]byte, uint32, error) {
 	if err != nil {
 		return nil, 20, err
 	}
-
-	nBytes, err := conn.Read(b[0:])
-
-	if err != nil && err != io.EOF {
-		return nil, 20, err
-	}
-
-	fmt.Printf("READ %d bytes\n", nBytes)
-
-	resBuf := append(b[0:nBytes], 0)
-	fmt.Printf("DATA: %s\n", string(resBuf[:]))
-
-	dataLength -= uint32(nBytes)
-
-	fmt.Printf("DATA LENGTH: %d bytes\n", dataLength)
-
-	for dataLength > 0 {
-		nBytes, err = conn.Read(b[:])
+	var resBuf []byte
+	for {
+		nBytes, err := conn.Read(b[:])
+		fmt.Printf("DATA APPEND: %s\n", string(b[:nBytes]))
 		if err != nil && err != io.EOF {
 			return nil, 20, err
 		}
-		resBuf = append(resBuf, b[0:nBytes]...)
+		resBuf = append(resBuf, b[:nBytes]...)
+		fmt.Printf("DATA: %s\n", string(resBuf))
 		dataLength -= uint32(nBytes)
-		fmt.Printf("DATA LENGTH: %d bytes\n", dataLength)
+		fmt.Printf("DATA LENGTH: %d\n", dataLength)
+		if dataLength == 0 {
+			return resBuf, actionType, nil
+		}
 	}
-
-	fmt.Println(resBuf[:])
-	for _, b := range resBuf {
-		fmt.Println(b)
-		fmt.Println(string(b))
-	}
-	fmt.Println("PASSSSS")
-	return resBuf, actionType, nil
 }
 
 func TellReadDone(c *net.Conn) {
