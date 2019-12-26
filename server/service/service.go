@@ -63,7 +63,6 @@ func HandleChangePassword(c *net.Conn, resBuf []byte) error {
 
 func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 	fmt.Println("CHATTTTT")
-	conn := *c
 	var p payload.ChatPayload
 	err := utils.UnmarshalObject(&p, resBuf)
 	if err != nil {
@@ -82,7 +81,6 @@ func HandleChat(c *net.Conn, resBuf []byte, clientConns *syncmap.Map) error {
 			co.Write(resBytes)
 		}
 	}
-	conn.Write([]byte("ACKKKK"))
 	return nil
 }
 
