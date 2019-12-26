@@ -9,7 +9,7 @@
             "type": "go",
             "request": "attach",
             "mode": "local",
-            "processId": 32101
+            "processId": 65755
         }
     ]
 }

@@ -1,0 +1,43 @@
+@startuml
+activate client
+client -> server: SendFileName(FileName)
+activate server
+
+server --> client: Return DownloadFileMessage
+
+alt Download Code == 1
+  
+  server -> server: Start read file
+
+  loop read bytes from file >= 0
+
+    server -> client: Send file chunk
+    
+    opt num bytes read == 0
+      
+      server -> server: "stop" read file
+
+    end
+  
+  end
+
+  loop received file chunk
+
+    alt num bytes received > 0
+
+      client -> client: Write file chunk
+    
+    else "stop" write file
+
+    end
+
+  end
+
+else Error occurs
+
+end
+
+deactivate client
+deactivate server
+
+@enduml

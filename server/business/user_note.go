@@ -31,12 +31,22 @@ func UserNote(username string) message.CheckUserResponse {
 			},
 		}
 	} else {
-		return message.CheckUserResponse{
-			Information: user.Note,
-			ReturnMessage: message.ReturnMessage{
-				ReturnCode:    message.Success,
-				ReturnMessage: message.GetMessageDecription(message.Success),
-			},
+		if user.Note != "" {
+			return message.CheckUserResponse{
+				Information: user.Note,
+				ReturnMessage: message.ReturnMessage{
+					ReturnCode:    message.Success,
+					ReturnMessage: message.GetMessageDecription(message.Success),
+				},
+			}
+		} else {
+			return message.CheckUserResponse{
+				Information: "note is not set",
+				ReturnMessage: message.ReturnMessage{
+					ReturnCode:    message.Success,
+					ReturnMessage: message.GetMessageDecription(message.Success),
+				},
+			}
 		}
 	}
 }

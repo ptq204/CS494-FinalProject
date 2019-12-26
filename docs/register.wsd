@@ -1,0 +1,28 @@
+@startuml
+client -> server: Register(Username, Password)
+activate server
+server-> database: Check Username
+database -> database: Check Username
+activate database
+deactivate database
+
+alt username does not exist
+
+  database -> database: Create new user(Username, Password)
+  activate database
+  deactivate database
+
+  database --> server: Create new user success
+
+  server --> client: Return Success
+
+else Username exists
+  
+  database --> server: Check Username success
+
+  server --> client: Return failure
+
+deactivate server
+
+end
+@enduml

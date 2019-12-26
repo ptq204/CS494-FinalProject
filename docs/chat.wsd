@@ -1,0 +1,15 @@
+@startuml
+client -> server: Chat(Receivers, Message)
+activate server
+
+  loop each receiver in Receivers
+  
+    server -> server: Get connection(receiver)
+ 
+    server --> client: Send Mesage(connection, Message)
+  
+  end
+
+deactivate server
+
+@enduml

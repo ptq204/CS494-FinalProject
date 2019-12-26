@@ -31,12 +31,22 @@ func UserBirthday(username string) message.CheckUserResponse {
 			},
 		}
 	} else {
-		return message.CheckUserResponse{
-			Information: user.Birthday.String(),
-			ReturnMessage: message.ReturnMessage{
-				ReturnCode:    message.Success,
-				ReturnMessage: message.GetMessageDecription(message.Success),
-			},
+		if user.Birthday != nil {
+			return message.CheckUserResponse{
+				Information: user.Birthday.String(),
+				ReturnMessage: message.ReturnMessage{
+					ReturnCode:    message.Success,
+					ReturnMessage: message.GetMessageDecription(message.Success),
+				},
+			}
+		} else {
+			return message.CheckUserResponse{
+				Information: "User's birthday is not set",
+				ReturnMessage: message.ReturnMessage{
+					ReturnCode:    message.Success,
+					ReturnMessage: message.GetMessageDecription(message.Success),
+				},
+			}
 		}
 	}
 }

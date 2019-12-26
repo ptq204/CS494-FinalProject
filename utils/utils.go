@@ -83,6 +83,7 @@ func ReadBytesData(c *net.Conn) ([]byte, uint32, error) {
 			return resBuf, actionType, nil
 		}
 	}
+
 }
 
 func TellReadDone(c *net.Conn) {

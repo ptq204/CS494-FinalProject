@@ -286,7 +286,7 @@ func DownloadFile(fileNames []string, flag string, clientService *manager.Client
 				fmt.Println(err.Error())
 			}
 		} else {
-			conn.Write([]byte("CONTINUTE"))
+			fmt.Println(resDownFile)
 		}
 	}
 }

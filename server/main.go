@@ -8,12 +8,13 @@ import (
 	service "final-project/server/service"
 	"final-project/utils"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-	"golang.org/x/sync/syncmap"
 	"io"
 	"net"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	"golang.org/x/sync/syncmap"
 )
 
 var clientConns syncmap.Map = syncmap.Map{}

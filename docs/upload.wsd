@@ -1,0 +1,43 @@
+@startuml
+activate client
+client -> server: SendFileMetadata(FileName, FileSize)
+activate server
+
+server --> client: Return UploadFileMessage
+
+alt Upload Code == 1
+  
+  client -> client: Start read file
+
+  loop read bytes from file >= 0
+
+    client -> server: Send file chunk
+    
+    opt num bytes read == 0
+      
+      client -> client: "stop" read file
+
+    end
+  
+  end
+
+  loop received file chunk
+
+    alt num bytes received > 0
+
+      server -> server: Write file chunk
+    
+    else "stop" write file
+
+    end
+
+  end
+
+else Error occurs
+
+end
+
+deactivate client
+deactivate server
+
+@enduml

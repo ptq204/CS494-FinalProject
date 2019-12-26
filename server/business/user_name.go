@@ -31,12 +31,22 @@ func UserName(username string) message.CheckUserResponse {
 			},
 		}
 	} else {
-		return message.CheckUserResponse{
-			Information: user.Name,
-			ReturnMessage: message.ReturnMessage{
-				ReturnCode:    message.Success,
-				ReturnMessage: message.GetMessageDecription(message.Success),
-			},
+		if user.Name != "" {
+			return message.CheckUserResponse{
+				Information: user.Name,
+				ReturnMessage: message.ReturnMessage{
+					ReturnCode:    message.Success,
+					ReturnMessage: message.GetMessageDecription(message.Success),
+				},
+			}
+		} else {
+			return message.CheckUserResponse{
+				Information: "name is not set",
+				ReturnMessage: message.ReturnMessage{
+					ReturnCode:    message.Success,
+					ReturnMessage: message.GetMessageDecription(message.Success),
+				},
+			}
 		}
 	}
 }

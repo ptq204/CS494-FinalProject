@@ -1,0 +1,40 @@
+@startuml
+client -> server: Login(Username, Password)
+activate server
+server-> database: Check Username
+database -> database: Check Username
+activate database
+deactivate  database
+
+alt username exists
+
+  database -> database: Compare passwords
+  activate database
+  deactivate database
+
+  alt passwords are the same
+  
+    database --> server: login success
+    
+    server -> server: Store user connection(username, connection)    
+
+    server --> client: Return Success
+
+  else passwords are not the same
+
+    database --> server: login fail
+
+    server --> client: Return Failure 
+
+  end
+
+else Username does not exist
+
+    database --> server: Cannot find user
+
+    server --> client: Return failure
+
+deactivate server
+
+end
+@enduml

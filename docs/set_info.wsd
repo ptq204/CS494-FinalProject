@@ -1,0 +1,26 @@
+@startuml
+client -> server: Update Info(Info type, New Info, Username)
+activate server
+server-> database: Check Username
+database -> database: Check Username
+activate database
+deactivate  database
+
+alt username exists
+  
+  database -> database: Update info(Info type, New Info)
+  activate database
+  deactivate database
+  database --> server: Change Info Success
+  server --> client: Return Success
+
+else Username does not exist
+
+  database --> server: Cannot find user
+
+  server --> client: Return failure
+
+deactivate server
+
+end
+@enduml

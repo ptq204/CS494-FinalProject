@@ -225,7 +225,6 @@ func (c *ClientSocket) SendDownFileMetada(actionType int, fileName string, encry
 
 	pl := payload.DownloadFilePayload{FileName: fileName, Encrypt: int32(encrypt)}
 	buffPayload := utils.MarshalObject(&pl)
-
 	buffDataLength := new(bytes.Buffer)
 	dataLength := make([]byte, 4)
 	binary.BigEndian.PutUint32(dataLength, uint32(len(buffPayload)))
@@ -235,7 +234,7 @@ func (c *ClientSocket) SendDownFileMetada(actionType int, fileName string, encry
 	copy(dataSend[:4], buffDataLength.Bytes())
 	copy(dataSend[4:8], buffAction.Bytes())
 	copy(dataSend[8:], buffPayload)
-
+	fmt.Println(string(dataSend))
 	_, err = c.conn.Write([]byte(dataSend))
 
 	return err

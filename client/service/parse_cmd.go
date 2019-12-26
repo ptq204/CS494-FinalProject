@@ -62,7 +62,7 @@ func ParseCmdAndExecute(clientService *manager.ClientSocket, command string) boo
 			} else {
 				CheckUser(commands[2], commands[1][1:], clientService)
 			}
-		case "setup":
+		case "setup_info":
 			if n != 4 {
 				fmt.Println("(error) ERR wrong number of arguments for 'setup' command")
 			} else {
@@ -103,7 +103,7 @@ func ParseCmdAndExecute(clientService *manager.ClientSocket, command string) boo
 				}
 				DownloadFile(files, "", clientService)
 			} else {
-				fmt.Println("(error) ERR wrong number of arguments for 'upload' command")
+				fmt.Println("(error) ERR wrong number of arguments for 'download' command")
 			}
 		}
 	}
