@@ -24,15 +24,34 @@ func decodeBase64(s string) []byte {
 	}
 	return data
 }
-func Decrypt(key, text string) string {
-	fmt.Println(text)
+
+// func Decrypt(key, text string) string {
+// 	fmt.Println(text)
+// 	block, err := aes.NewCipher([]byte(key))
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	ciphertext := decodeBase64(text)
+// 	cfb := cipher.NewCFBEncrypter(block, iv)
+// 	plaintext := make([]byte, len(ciphertext))
+// 	cfb.XORKeyStream(plaintext, ciphertext)
+// 	return string(plaintext)
+// }
+func Decrypt(key string, text string) string {
+	ciphertext, _ := base64.URLEncoding.DecodeString(text)
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
 		panic(err)
 	}
-	ciphertext := decodeBase64(text)
-	cfb := cipher.NewCFBEncrypter(block, iv)
-	plaintext := make([]byte, len(ciphertext))
-	cfb.XORKeyStream(plaintext, ciphertext)
-	return string(plaintext)
+	// The IV needs to be unique, but not secure. Therefore it's common to
+	// include it at the beginning of the ciphertext.
+	if len(ciphertext) < aes.BlockSize {
+		panic("ciphertext too short")
+	}
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+	stream := cipher.NewCFBDecrypter(block, iv)
+	// XORKeyStream can work in-place if the two arguments are the same.
+	stream.XORKeyStream(ciphertext, ciphertext)
+	return fmt.Sprintf("%s", ciphertext)
 }

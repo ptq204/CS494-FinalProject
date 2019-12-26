@@ -7,6 +7,7 @@ import (
 	"final-project/server/db/client"
 	"final-project/server/db/entity"
 	"final-project/server/define"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
@@ -34,6 +35,7 @@ func Register(username string, password string, encrypt int32) message.ReturnMes
 		}
 	} else {
 		bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+		fmt.Println(username)
 		user := entity.User{Username: username, Password: string(bytes), ID: uuid.NewV4(), IsActive: false}
 		err = db.Table("user").Create(&user).Error
 		if err != nil {

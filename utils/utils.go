@@ -6,6 +6,9 @@ import (
 	"encoding/binary"
 	"encoding/csv"
 	"encoding/json"
+	"final-project/constant"
+	"final-project/decrypt"
+	e "final-project/encrypt"
 	_ "final-project/message"
 	"fmt"
 	"io"
@@ -168,27 +171,32 @@ func SendFileData(c *net.Conn, fileName string, encrypt int) error {
 	buff := make([]byte, 1024)
 	for {
 		nBytes, err := f.Read(buff)
-		fmt.Println(nBytes)
+		// fmt.Println(nBytes)
 		if err != nil && err != io.EOF {
 			return err
 		}
 		if nBytes >= 0 {
-			if encrypt == 1 {
+			finalNBytes := nBytes
+			if encrypt == 1 && finalNBytes > 0 {
 				// PUT Encrypt function here
+				fmt.Println(string(buff[0:nBytes]))
+				buff = []byte(e.Encrypt(constant.PASSPHRASE, string(buff[0:nBytes])))
+				finalNBytes = len(buff)
+				fmt.Println(string(buff))
 			}
-
-			buffSend := make([]byte, 4+nBytes)
+			fmt.Println(finalNBytes)
+			buffSend := make([]byte, 4+finalNBytes)
 
 			buffBytesLength := new(bytes.Buffer)
 			numBytesBuff := make([]byte, 4)
-			binary.BigEndian.PutUint32(numBytesBuff, uint32(nBytes))
+			binary.BigEndian.PutUint32(numBytesBuff, uint32(finalNBytes))
 			err := binary.Write(buffBytesLength, binary.BigEndian, numBytesBuff)
 			if err != nil {
 				return err
 			}
 
 			copy(buffSend[:4], buffBytesLength.Bytes())
-			copy(buffSend[4:], buff[:nBytes])
+			copy(buffSend[4:], buff[:])
 
 			conn.Write(buffSend)
 		}
@@ -214,26 +222,31 @@ func ReceiveFile(c *net.Conn, fileName string, fileSize int64, encrypt int) erro
 	}
 	for {
 		header := make([]byte, 4)
-		fileChunk := make([]byte, 1024)
 
 		_, err := conn.Read(header[0:])
 		if err != nil {
 			return err
 		}
-
 		dataLength = binary.BigEndian.Uint32(header)
+		// fmt.Println(dataLength)
+		fileChunk := make([]byte, dataLength)
 		if dataLength > 0 {
-			nBytes, err = conn.Read(fileChunk[0:dataLength])
+			nBytes, err = conn.Read(fileChunk[:])
 			if err != nil {
 				return err
 			}
 
 			if encrypt == 1 {
 				// Put Decrypt Function here
-				fileChunk = []byte("DECRYPTED FILE CHUNK")
+				fmt.Println(string(fileChunk))
+				fileChunkString := decrypt.Decrypt(constant.PASSPHRASE, string(fileChunk[0:nBytes]))
+				fmt.Println(fileChunkString)
+				fileChunk = []byte(fileChunkString)
+				fmt.Println(string(fileChunk))
+				f.Write(fileChunk[:])
+			} else {
+				f.Write(fileChunk[:])
 			}
-
-			f.Write(fileChunk[0:nBytes])
 		}
 		if dataLength == 0 || nBytes < prevNBytes {
 			f.Close()
