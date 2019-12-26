@@ -13,8 +13,9 @@ import (
 func main() {
 
 	reader := bufio.NewReader(os.Stdin)
+	checkExit := false
 	for {
-		fmt.Print("ChatApp~>: ")
+		fmt.Print("SocketApp~>: ")
 		cmd, _ := reader.ReadString('\n')
 		var commands []string
 		commands, _ = utils.SplitCommand(cmd)
@@ -28,21 +29,25 @@ func main() {
 			} else {
 				break
 			}
-
+		} else if strings.TrimRight(cmd, "\n") == "exit" {
+			checkExit = true
+			break
 		} else {
 			fmt.Println("Please connect before continuing")
 		}
 	}
-	err := manager.Connect("127.0.0.1", "1234")
-	checkError(err)
-	clientService := manager.GetClientService()
-	for {
-		fmt.Print("SocketApp~>: ")
-		cmd, _ := reader.ReadString('\n')
-		cmd = strings.TrimRight(cmd, "\n")
-		if !service.ParseCmdAndExecute(&clientService, cmd) {
-			break
+	if !checkExit {
+		clientService := manager.GetClientService()
+		for {
+			fmt.Print("SocketApp~>: ")
+			cmd, _ := reader.ReadString('\n')
+			cmd = strings.TrimRight(cmd, "\n")
+			if !service.ParseCmdAndExecute(&clientService, cmd) {
+				break
+			}
 		}
+	} else {
+		fmt.Println("Bye bye!!")
 	}
 }
 

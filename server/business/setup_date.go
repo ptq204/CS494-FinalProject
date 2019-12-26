@@ -5,8 +5,12 @@ import (
 	"final-project/server/db/client"
 	"final-project/server/db/entity"
 	define "final-project/server/define"
+	"time"
+
 	"github.com/jinzhu/gorm"
 )
+
+const RFC3339FullDate = "2006-01-02"
 
 func SetupDate(username string, date string) message.ReturnMessage {
 	var user entity.User
@@ -32,7 +36,9 @@ func SetupDate(username string, date string) message.ReturnMessage {
 			ReturnMessage: message.GetMessageDecription(message.UserNotActive),
 		}
 	}
-	err = db.Model(&user).Update("birthday", date).Error
+
+	t, _ := time.Parse(RFC3339FullDate, date)
+	err = db.Model(&user).Update("birthday", t).Error
 	if err != nil {
 		return message.ReturnMessage{
 			ReturnCode:    message.Unknown,

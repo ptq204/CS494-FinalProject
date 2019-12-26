@@ -75,9 +75,9 @@ func ParseCmdAndExecute(clientService *manager.ClientSocket, command string) boo
 			if n == 2 {
 				files = append(files, commands[1])
 				UploadFile(files, "", "", clientService)
-			} else if n == 3 && commands[1] == "-encrypt" {
+			} else if n == 3 && commands[1] == "-encrypt_data" {
 				files = append(files, commands[2])
-				UploadFile(files, "", "encrypt", clientService)
+				UploadFile(files, "", "encrypt_data", clientService)
 			} else if n == 4 && commands[1] == "-change_name" {
 				files = append(files, commands[3])
 				UploadFile(files, commands[2], "", clientService)
@@ -94,9 +94,9 @@ func ParseCmdAndExecute(clientService *manager.ClientSocket, command string) boo
 			if n == 2 {
 				files = append(files, commands[1])
 				DownloadFile(files, "", clientService)
-			} else if n == 3 && commands[1] == "-encrypt" {
+			} else if n == 3 && commands[1] == "-encrypt_data" {
 				files = append(files, commands[2])
-				DownloadFile(files, "encrypt", clientService)
+				DownloadFile(files, "encrypt_data", clientService)
 			} else if n >= 3 && commands[1] == "-multi_file" {
 				for i := 2; i < n; i++ {
 					files = append(files, commands[i])

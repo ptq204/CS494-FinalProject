@@ -168,6 +168,10 @@ func Chat(clientService *manager.ClientSocket) {
 		fmt.Print("Chat~>: ")
 		cmd, _ := reader.ReadString('\n')
 
+		if strings.TrimRight(cmd, "\n") == "\\q" {
+			break
+		}
+
 		commands, _ := utils.SplitCommand(cmd)
 		n := len(commands)
 
@@ -229,7 +233,7 @@ func Chat(clientService *manager.ClientSocket) {
 func UploadFile(fileNames []string, alterFileName string, flag string, clientService *manager.ClientSocket) {
 
 	encrypt := 0
-	if flag == "encrypt" {
+	if flag == "encrypt_data" {
 		encrypt = 1
 	}
 
@@ -260,7 +264,7 @@ func UploadFile(fileNames []string, alterFileName string, flag string, clientSer
 
 func DownloadFile(fileNames []string, flag string, clientService *manager.ClientSocket) {
 	encrypt := 0
-	if flag == "encrypt" {
+	if flag == "encrypt_data" {
 		encrypt = 1
 	}
 
