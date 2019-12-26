@@ -8,12 +8,6 @@ import (
 
 func ParseCmdAndExecute(clientService *manager.ClientSocket, command string) bool {
 
-	if clientService.GetCurrUserName() == "" {
-		fmt.Println("Client havent connect yet")
-	} else {
-		fmt.Println(clientService.GetCurrUserName())
-	}
-
 	var commands []string
 	commands, _ = utils.SplitCommand(command)
 
